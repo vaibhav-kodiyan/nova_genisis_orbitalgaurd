@@ -4,8 +4,8 @@ A high-performance C++ library for satellite orbit propagation and tracking, por
 
 ## Project Status
 
-**Current Phase**: 1 - Baseline & De-scope Charter ✅  
-**Next Phase**: 2 - Core Math Foundation
+**Current Phase**: 3 - Core Constants & Types Porting ✅  
+**Next Phase**: 4 - Time Systems
 
 ## Quick Start
 
@@ -35,7 +35,7 @@ This project is currently in the initial setup phase. The library will provide:
 ## Development Phases
 
 1. **✅ Baseline & Charter** - Project setup and documentation
-2. **📋 Core Math** - Vector/matrix operations and constants
+2. **✅ Core Constants & Types** - Physical constants and data structures
 3. **📋 Time Systems** - Julian dates and time conversions
 4. **📋 TLE Processing** - Two-Line Element parsing
 5. **📋 SGP4 Implementation** - Core propagation algorithms
@@ -80,5 +80,5 @@ Please read [CONTRIBUTING.md](docs/CONTRIBUTING.md) for development guidelines, 
 
 ---
 
-**Status**: Phase 1 Complete - Ready for Core Math Foundation  
+**Status**: Phase 3 Complete - Ready for Time Systems  
 **Last Updated**: 2025-08-24
