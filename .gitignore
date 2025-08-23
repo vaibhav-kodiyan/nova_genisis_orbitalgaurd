@@ -1,0 +1,51 @@
+# Build directories
+/build/
+/cmake-build-*/
+/out/
+
+# Compiled artifacts
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+!toolchain*.cmake
+
+# IDE files
+.vscode/
+.idea/
+*.vcxproj*
+*.sln
+*.suo
+*.user
+
+# Editor files
+*~
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Emscripten output
+*.js
+*.wasm
+*.js.map
+
+# Debug files
+*.pdb
+*.dSYM/
+
+# Package managers
+conan.lock
+vcpkg_installed/
