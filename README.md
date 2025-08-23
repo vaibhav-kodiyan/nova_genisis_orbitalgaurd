@@ -9,13 +9,44 @@ A high-performance C++ library for satellite orbit propagation and tracking, por
 
 ## Quick Start
 
-This project is currently in the initial setup phase. The library will provide:
+### Building the Project
+
+#### Prerequisites
+- CMake 3.20 or higher
+- C++20 compatible compiler (GCC 10+, Clang 11+, MSVC 2019+)
+
+#### Native Build
+```bash
+# Configure the build
+cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+
+# Build the project
+cmake --build build
+
+# Run the test executable
+./build/nova_genesis_orbitalguard_test
+```
+
+#### Debug Build
+```bash
+cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug
+cmake --build build
+```
+
+#### WebAssembly Build (Optional)
+```bash
+# Requires Emscripten SDK
+emcmake cmake -B build-wasm -S . -DCMAKE_TOOLCHAIN_FILE=toolchain-emscripten.cmake
+cmake --build build-wasm
+```
+
+### Library Features (Planned)
 
 - **SGP4/SDP4 Propagation**: High-accuracy satellite position prediction
 - **TLE Processing**: Two-Line Element parsing and validation  
 - **Coordinate Transformations**: ECI, ECEF, and topocentric conversions
 - **Ground Station Calculations**: Azimuth, elevation, range, and Doppler
-- **Modern C++**: C++17/20 with performance optimizations
+- **Modern C++**: C++20 with performance optimizations
 
 ## Repository Structure
 

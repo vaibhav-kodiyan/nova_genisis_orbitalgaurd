@@ -1,0 +1,84 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        build_type: [Debug, Release]
+        compiler:
+          - { name: gcc, cc: gcc, cxx: g++ }
+          - { name: clang, cc: clang, cxx: clang++ }
+        exclude:
+          # Windows doesn't have these compilers by default
+          - os: windows-latest
+            compiler: { name: gcc, cc: gcc, cxx: g++ }
+          - os: windows-latest
+            compiler: { name: clang, cc: clang, cxx: clang++ }
+
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup CMake
+      uses: jwlawson/actions-setup-cmake@v1.14
+      with:
+        cmake-version: '3.20'
+
+    - name: Setup GCC (Linux)
+      if: matrix.os == 'ubuntu-latest' && matrix.compiler.name == 'gcc'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-10 g++-10
+        echo "CC=gcc-10" >> $GITHUB_ENV
+        echo "CXX=g++-10" >> $GITHUB_ENV
+
+    - name: Setup Clang (Linux)
+      if: matrix.os == 'ubuntu-latest' && matrix.compiler.name == 'clang'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang-12
+        echo "CC=clang-12" >> $GITHUB_ENV
+        echo "CXX=clang++-12" >> $GITHUB_ENV
+
+    - name: Setup MSVC (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: microsoft/setup-msbuild@v1.3
+
+    - name: Cache build directory
+      uses: actions/cache@v3
+      with:
+        path: build
+        key: ${{ runner.os }}-${{ matrix.compiler.name }}-${{ matrix.build_type }}-${{ hashFiles('CMakeLists.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.compiler.name }}-${{ matrix.build_type }}-
+
+    - name: Configure CMake
+      run: |
+        cmake -B build -S . -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+    - name: Build
+      run: |
+        cmake --build build --config ${{ matrix.build_type }}
+
+    - name: Test
+      run: |
+        cd build
+        ctest --build-config ${{ matrix.build_type }} --output-on-failure
+
+    - name: Run executable test
+      shell: bash
+      run: |
+        if [ "${{ matrix.os }}" = "windows-latest" ]; then
+          ./build/${{ matrix.build_type }}/nova_genesis_orbitalguard_test.exe
+        else
+          ./build/nova_genesis_orbitalguard_test
+        fi
