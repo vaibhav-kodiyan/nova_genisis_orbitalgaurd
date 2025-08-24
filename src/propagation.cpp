@@ -89,7 +89,6 @@ static void apply_j2_corrections(const OrbitalElements* elements, OrbitalElement
     
     // J2 perturbation calculations
     double cos_inc = cos(elements->inclination);
-    double sin_inc = sin(elements->inclination);
     double cos_inc_sq = cos_inc * cos_inc;
     
     // J2 correction factors

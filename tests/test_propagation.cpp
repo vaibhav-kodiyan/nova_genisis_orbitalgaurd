@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <cassert>
+#include <cstring>
 #include "../include/propagation.h"
 #include "../include/constants.h"
 
@@ -28,7 +29,8 @@ void test_basic_propagation() {
     std::cout << "Running test_basic_propagation..." << std::endl;
     
     // ISS-like orbital elements (approximate)
-    OrbitalElements elements = {0};
+    OrbitalElements elements = {};
+    memset(&elements, 0, sizeof(elements));
     elements.epoch = 2460000.0;  // Julian date
     elements.mean_motion = 15.5;  // revolutions per day
     elements.eccentricity = 0.0001;  // Nearly circular
@@ -65,7 +67,8 @@ void test_basic_propagation() {
 void test_time_propagation() {
     std::cout << "Running test_time_propagation..." << std::endl;
     
-    OrbitalElements elements = {0};
+    OrbitalElements elements = {};
+    memset(&elements, 0, sizeof(elements));
     elements.epoch = 2460000.0;
     elements.mean_motion = 15.0;
     elements.eccentricity = 0.01;
@@ -101,7 +104,8 @@ void test_time_propagation() {
 void test_error_handling() {
     std::cout << "Running test_error_handling..." << std::endl;
     
-    OrbitalElements elements = {0};
+    OrbitalElements elements = {};
+    memset(&elements, 0, sizeof(elements));
     StateVectorECI state;
     
     // Test null pointer inputs
@@ -124,7 +128,8 @@ void test_error_handling() {
 void test_high_eccentricity() {
     std::cout << "Running test_high_eccentricity..." << std::endl;
     
-    OrbitalElements elements = {0};
+    OrbitalElements elements = {};
+    memset(&elements, 0, sizeof(elements));
     elements.epoch = 2460000.0;
     elements.mean_motion = 10.0;
     elements.eccentricity = 0.5;  // Moderately elliptical
@@ -153,7 +158,8 @@ void test_high_eccentricity() {
 void test_j2_effects() {
     std::cout << "Running test_j2_effects..." << std::endl;
     
-    OrbitalElements elements = {0};
+    OrbitalElements elements = {};
+    memset(&elements, 0, sizeof(elements));
     elements.epoch = 2460000.0;
     elements.mean_motion = 14.0;
     elements.eccentricity = 0.001;
