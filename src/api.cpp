@@ -39,6 +39,78 @@ static bool validate_ptr(const void* ptr, const char* param_name) {
     return true;
 }
 
+// Helper function to parse TLE lines into orbital elements
+static bool parse_tle_to_elements(const char* name, const char* line1, const char* line2, OrbitalElements* elements) {
+    if (!line1 || !line2 || !elements || strlen(line1) < 69 || strlen(line2) < 69) {
+        return false;
+    }
+    
+    // Validate TLE format
+    if (line1[0] != '1' || line2[0] != '2') {
+        return false;
+    }
+    
+    try {
+        // Parse Line 1
+        elements->epoch = 0.0; // Will be computed from epoch year and day
+        elements->bstar = 0.0;
+        elements->ndot = 0.0;
+        elements->nddot = 0.0;
+        
+        // Extract epoch year and day from line 1 (columns 19-32)
+        std::string epoch_str(line1 + 18, 14);
+        double epoch_year = std::stod(epoch_str.substr(0, 2));
+        double epoch_day = std::stod(epoch_str.substr(2));
+        
+        // Convert 2-digit year to 4-digit (assume 1957-2056 range)
+        if (epoch_year < 57) {
+            epoch_year += 2000;
+        } else {
+            epoch_year += 1900;
+        }
+        
+        // Convert to Julian date (approximate)
+        elements->epoch = 365.25 * (epoch_year - 2000) + JULIAN_EPOCH + epoch_day - 1;
+        
+        // Parse Line 2
+        std::string line2_str(line2);
+        
+        // Inclination (columns 9-16)
+        elements->inclination = std::stod(line2_str.substr(8, 8)) * DEG_TO_RAD;
+        elements->tilt = elements->inclination; // Alias
+        
+        // RAAN (columns 18-25)
+        elements->raan = std::stod(line2_str.substr(17, 8)) * DEG_TO_RAD;
+        elements->node = elements->raan; // Alias
+        
+        // Eccentricity (columns 27-33, implied decimal point)
+        std::string ecc_str = "0." + line2_str.substr(26, 7);
+        elements->eccentricity = std::stod(ecc_str);
+        
+        // Argument of perigee (columns 35-42)
+        elements->arg_perigee = std::stod(line2_str.substr(34, 8)) * DEG_TO_RAD;
+        elements->perigee_angle = elements->arg_perigee; // Alias
+        
+        // Mean anomaly (columns 44-51)
+        elements->mean_anomaly = std::stod(line2_str.substr(43, 8)) * DEG_TO_RAD;
+        elements->position = elements->mean_anomaly; // Alias
+        
+        // Mean motion (columns 53-63)
+        elements->mean_motion = std::stod(line2_str.substr(52, 11));
+        
+        // Calculate semi-major axis from mean motion
+        double n_rad_per_sec = elements->mean_motion * TWO_PI / (24.0 * 3600.0);
+        elements->semi_major_axis = pow(MU / (n_rad_per_sec * n_rad_per_sec), 1.0/3.0);
+        
+        // Set time alias
+        elements->time = elements->epoch;
+        
+        return true;
+    } catch (...) {
+        return false;
+    }
+}
+
 extern "C" {
 
 // Error reporting
@@ -46,7 +118,7 @@ const char* og_last_error(void) {
     return g_last_error[0] ? g_last_error : nullptr;
 }
 
-// Handles & lifecycle - stubs
+// Handles & lifecycle
 void* og_parse_tle(const char* name, const char* line1, const char* line2) {
     clear_error();
     
@@ -56,9 +128,24 @@ void* og_parse_tle(const char* name, const char* line1, const char* line2) {
         return nullptr;
     }
     
-    // TODO: Implement TLE parsing
-    set_error("og_parse_tle not yet implemented");
-    return nullptr;
+    // Allocate orbital elements structure
+    OrbitalElements* elements = new(std::nothrow) OrbitalElements;
+    if (!elements) {
+        set_error("Memory allocation failed");
+        return nullptr;
+    }
+    
+    // Initialize to zero
+    memset(elements, 0, sizeof(OrbitalElements));
+    
+    // Parse TLE data
+    if (!parse_tle_to_elements(name, line1, line2, elements)) {
+        delete elements;
+        set_error("Failed to parse TLE data");
+        return nullptr;
+    }
+    
+    return elements;
 }
 
 void og_free_elements(void* elements) {
@@ -68,8 +155,7 @@ void og_free_elements(void* elements) {
         return; // Silently ignore null pointer (like free())
     }
     
-    // TODO: Implement element cleanup
-    set_error("og_free_elements not yet implemented");
+    delete static_cast<OrbitalElements*>(elements);
 }
 
 // Propagation - stub
