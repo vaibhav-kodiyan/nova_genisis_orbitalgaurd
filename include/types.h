@@ -33,6 +33,10 @@ struct OrbitalElements {
     double epoch;           // reference time in Julian date (alias for compatibility)
     double mean_motion;     // mean motion in revolutions per day
     double mean_anomaly;    // mean anomaly in radians
+    // optional SGP4-related parameters (not currently used by propagator, kept for compatibility)
+    double bstar;           // drag term
+    double ndot;            // first time derivative of mean motion (rev/day^2)
+    double nddot;           // second time derivative of mean motion (rev/day^3)
 };
 
 

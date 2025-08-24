@@ -67,11 +67,11 @@ if(ENABLE_SGP4)
     endif()
 endif()
 
-# Optional executable for testing
-add_executable(${PROJECT_NAME}_test src/main.cpp)
-# Link library and also SGP4 when enabled (use keyword signature consistently)
-target_link_libraries(${PROJECT_NAME}_test PRIVATE ${PROJECT_NAME})
+# Optional demo executable (JSON generation) that depends on external SGP4
 if(ENABLE_SGP4)
+    add_executable(${PROJECT_NAME}_test src/main.cpp)
+    # Link library and also SGP4 when enabled (use keyword signature consistently)
+    target_link_libraries(${PROJECT_NAME}_test PRIVATE ${PROJECT_NAME})
     # Also link SGP4 directly to the test exe (in case it includes headers directly)
     target_link_libraries(${PROJECT_NAME}_test PRIVATE SGP4)
 endif()
