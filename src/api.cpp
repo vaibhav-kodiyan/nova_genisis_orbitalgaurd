@@ -263,7 +263,7 @@ size_t og_screen(const double* const* states, const char** ids,
     return encounter_count;
 }
 
-// Maneuver planning - stub
+// Maneuver planning
 int og_plan_maneuver(const void* primary_elements, const void* secondary_elements,
                     double encounter_epoch, double target_distance_km,
                     double max_delta_v_mps, og_maneuver_t* out_m) {
@@ -275,9 +275,68 @@ int og_plan_maneuver(const void* primary_elements, const void* secondary_element
         return -1;
     }
     
-    // TODO: Implement maneuver planning
-    set_error("og_plan_maneuver not yet implemented");
-    return -1;
+    if (target_distance_km <= 0 || max_delta_v_mps <= 0) {
+        set_error("Invalid maneuver parameters");
+        return -1;
+    }
+    
+    // Basic maneuver planning (simplified approach)
+    // In a real implementation, this would use Lambert's problem or similar
+    OrbitalElements* primary = static_cast<OrbitalElements*>(const_cast<void*>(primary_elements));
+    OrbitalElements* secondary = static_cast<OrbitalElements*>(const_cast<void*>(secondary_elements));
+    
+    // Calculate time to encounter from primary's epoch
+    double time_to_encounter = (encounter_epoch - primary->epoch) * MINUTES_PER_DAY;
+    
+    // Propagate both satellites to encounter time
+    StateVectorECI primary_state, secondary_state;
+    int result1 = propagate(primary, time_to_encounter, &primary_state);
+    int result2 = propagate(secondary, time_to_encounter, &secondary_state);
+    
+    if (result1 != PROPAGATION_SUCCESS || result2 != PROPAGATION_SUCCESS) {
+        set_error("Failed to propagate satellites to encounter time");
+        return -1;
+    }
+    
+    // Calculate relative position
+    double rel_pos[3] = {
+        secondary_state.r[0] - primary_state.r[0],
+        secondary_state.r[1] - primary_state.r[1],
+        secondary_state.r[2] - primary_state.r[2]
+    };
+    
+    double current_distance = sqrt(rel_pos[0]*rel_pos[0] + rel_pos[1]*rel_pos[1] + rel_pos[2]*rel_pos[2]);
+    
+    if (current_distance > target_distance_km) {
+        // No maneuver needed
+        memset(out_m, 0, sizeof(og_maneuver_t));
+        out_m->epoch = encounter_epoch;
+        out_m->fuel_cost_kg = 0.0;
+        strncpy(out_m->id, "PRIMARY", sizeof(out_m->id) - 1);
+        return 0;
+    }
+    
+    // Simple avoidance maneuver: radial delta-V
+    double separation_needed = target_distance_km - current_distance;
+    double delta_v_magnitude = separation_needed * 0.001; // Simplified conversion (km to km/s)
+    
+    // Convert to m/s and check against limit
+    double delta_v_ms = delta_v_magnitude * 1000.0;
+    if (delta_v_ms > max_delta_v_mps) {
+        set_error("Required delta-V exceeds maximum allowed");
+        return -1;
+    }
+    
+    // Fill output structure
+    out_m->epoch = encounter_epoch;
+    out_m->delta_v[0] = delta_v_ms; // Radial component
+    out_m->delta_v[1] = 0.0;
+    out_m->delta_v[2] = 0.0;
+    out_m->fuel_cost_kg = -1.0; // Unknown without spacecraft mass
+    strncpy(out_m->id, "PRIMARY", sizeof(out_m->id) - 1);
+    out_m->id[sizeof(out_m->id) - 1] = '\0';
+    
+    return 0;
 }
 
 // Fuel consumption - stub with basic rocket equation
