@@ -3,6 +3,7 @@
 #include "propagation.h"
 #include "screening.h"
 #include "constants.h"
+#include "time_utils.h"
 #include <cstring>
 #include <cstdlib>
 #include <cmath>
@@ -253,7 +254,8 @@ size_t og_screen(const double* const* states, const char** ids,
                 enc->id_b[sizeof(enc->id_b) - 1] = '\0';
                 
                 enc->min_distance_km = distance;
-                enc->tca_epoch = 0.0; // Current time (not specified in input)
+                // Set current time as TCA time
+                get_current_gregorian_time(&enc->tca_time);
                 
                 encounter_count++;
             }
@@ -265,12 +267,13 @@ size_t og_screen(const double* const* states, const char** ids,
 
 // Maneuver planning
 int og_plan_maneuver(const void* primary_elements, const void* secondary_elements,
-                    double encounter_epoch, double target_distance_km,
+                    const gregorian_time_t* encounter_time, double target_distance_km,
                     double max_delta_v_mps, og_maneuver_t* out_m) {
     clear_error();
     
     if (!validate_ptr(primary_elements, "primary_elements") ||
         !validate_ptr(secondary_elements, "secondary_elements") ||
+        !validate_ptr(encounter_time, "encounter_time") ||
         !validate_ptr(out_m, "out_m")) {
         return -1;
     }
@@ -284,6 +287,9 @@ int og_plan_maneuver(const void* primary_elements, const void* secondary_element
     // In a real implementation, this would use Lambert's problem or similar
     OrbitalElements* primary = static_cast<OrbitalElements*>(const_cast<void*>(primary_elements));
     OrbitalElements* secondary = static_cast<OrbitalElements*>(const_cast<void*>(secondary_elements));
+    
+    // Convert encounter time to Julian date
+    double encounter_epoch = gregorian_to_julian(encounter_time);
     
     // Calculate time to encounter from primary's epoch
     double time_to_encounter = (encounter_epoch - primary->epoch) * MINUTES_PER_DAY;
@@ -310,7 +316,7 @@ int og_plan_maneuver(const void* primary_elements, const void* secondary_element
     if (current_distance > target_distance_km) {
         // No maneuver needed
         memset(out_m, 0, sizeof(og_maneuver_t));
-        out_m->epoch = encounter_epoch;
+        out_m->time = *encounter_time;
         out_m->fuel_cost_kg = 0.0;
         strncpy(out_m->id, "PRIMARY", sizeof(out_m->id) - 1);
         return 0;
@@ -328,7 +334,7 @@ int og_plan_maneuver(const void* primary_elements, const void* secondary_element
     }
     
     // Fill output structure
-    out_m->epoch = encounter_epoch;
+    out_m->time = *encounter_time;
     out_m->delta_v[0] = delta_v_ms; // Radial component
     out_m->delta_v[1] = 0.0;
     out_m->delta_v[2] = 0.0;

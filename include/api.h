@@ -2,6 +2,7 @@
 #define OG_API_H
 
 #include <stddef.h>
+#include "time_utils.h"
 
 // Symbol visibility macro
 #if defined(_WIN32)
@@ -19,14 +20,14 @@ extern "C" {
  */
 
 typedef struct {
-    double tca_epoch;          // Time of closest approach (Julian date)
+    gregorian_time_t tca_time; // Time of closest approach (Gregorian calendar)
     double min_distance_km;    // Minimum distance in kilometers
     char   id_a[32];          // First satellite ID
     char   id_b[32];          // Second satellite ID
 } og_encounter_t;
 
 typedef struct {
-    double epoch;              // Maneuver epoch (Julian date)
+    gregorian_time_t time;     // Maneuver time (Gregorian calendar)
     double delta_v[3];         // Delta-V vector in m/s, ECI coordinates
     double fuel_cost_kg;       // Fuel cost in kg (-1 if unknown)
     char   id[32];            // Satellite ID
@@ -92,14 +93,14 @@ OG_API size_t og_screen(const double* const* states, const char** ids,
  * Plan maneuver to avoid collision
  * @param primary_elements Handle to primary satellite elements
  * @param secondary_elements Handle to secondary satellite elements
- * @param encounter_epoch Time of encounter (Julian date)
+ * @param encounter_time Time of encounter (Gregorian calendar)
  * @param target_distance_km Desired separation distance
  * @param max_delta_v_mps Maximum allowed delta-V in m/s
  * @param out_m Output maneuver structure
  * @return 0 on success, non-zero on error
  */
 OG_API int og_plan_maneuver(const void* primary_elements, const void* secondary_elements,
-                           double encounter_epoch, double target_distance_km,
+                           const gregorian_time_t* encounter_time, double target_distance_km,
                            double max_delta_v_mps, og_maneuver_t* out_m);
 
 /**

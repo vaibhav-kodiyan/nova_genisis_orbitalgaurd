@@ -56,6 +56,7 @@ set(SOURCES
     src/types.cpp
     src/propagation.cpp
     src/screening.cpp
+    src/time_utils.cpp
 )
 
 # API source files
