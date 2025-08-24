@@ -82,6 +82,53 @@ function demonstrateAPI(og) {
             console.error('❌ Propagation failed:', error);
         }
         
+        // Test maneuver planning
+        console.log('\n--- Testing Maneuver Planning ---');
+        
+        // Create encounter time structure (January 2, 2023, 12:00:00)
+        const encounterTimePtr = og._malloc(24); // Allocate space for gregorian_time_t
+        og.setValue(encounterTimePtr, 2023, 'i32');      // year
+        og.setValue(encounterTimePtr + 4, 1, 'i32');     // month
+        og.setValue(encounterTimePtr + 8, 2, 'i32');     // day
+        og.setValue(encounterTimePtr + 12, 12, 'i32');   // hour
+        og.setValue(encounterTimePtr + 16, 0, 'i32');    // minute
+        og.setValue(encounterTimePtr + 20, 0.0, 'double'); // second
+        
+        const maneuverPtr = og._malloc(64); // Allocate space for og_maneuver_t
+        const targetDistance = 10.0; // km
+        const maxDeltaV = 100.0; // m/s
+        
+        const maneuverResult = og.ccall('og_plan_maneuver', 'number', 
+            ['number', 'number', 'number', 'number', 'number', 'number'],
+            [elements, elements, encounterTimePtr, targetDistance, maxDeltaV, maneuverPtr]);
+        
+        if (maneuverResult === 0) {
+            // Read maneuver time from memory (gregorian_time_t structure)
+            const maneuverYear = og.getValue(maneuverPtr, 'i32');
+            const maneuverMonth = og.getValue(maneuverPtr + 4, 'i32');
+            const maneuverDay = og.getValue(maneuverPtr + 8, 'i32');
+            const maneuverHour = og.getValue(maneuverPtr + 12, 'i32');
+            const maneuverMinute = og.getValue(maneuverPtr + 16, 'i32');
+            const maneuverSecond = og.getValue(maneuverPtr + 20, 'double');
+            
+            // Read delta-V components (after gregorian_time_t structure)
+            const deltaVX = og.getValue(maneuverPtr + 24, 'double');
+            const deltaVY = og.getValue(maneuverPtr + 32, 'double');
+            const deltaVZ = og.getValue(maneuverPtr + 40, 'double');
+            const fuelCost = og.getValue(maneuverPtr + 48, 'double');
+            
+            console.log(`Maneuver planned for: ${maneuverYear}-${maneuverMonth.toString().padStart(2, '0')}-${maneuverDay.toString().padStart(2, '0')} ${maneuverHour.toString().padStart(2, '0')}:${maneuverMinute.toString().padStart(2, '0')}:${maneuverSecond.toFixed(1).padStart(4, '0')}`);
+            console.log(`Delta-V: [${deltaVX.toFixed(3)}, ${deltaVY.toFixed(3)}, ${deltaVZ.toFixed(3)}] m/s`);
+            console.log(`Fuel cost: ${fuelCost.toFixed(3)} kg`);
+        } else {
+            console.log('Maneuver planning failed');
+            const error = og.ccall('og_last_error', 'string', [], []);
+            console.log(`Error: ${error}`);
+        }
+        
+        og._free(encounterTimePtr);
+        og._free(maneuverPtr);
+        
         // Clean up memory
         og._free(posPtr);
         og._free(velPtr);

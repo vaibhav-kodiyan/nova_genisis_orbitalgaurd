@@ -32,12 +32,22 @@ node example.js
 
 ## API Usage
 
-The example demonstrates:
-- Loading the WASM module
-- Parsing TLE data (`og_parse_tle`)
-- Propagating satellite positions (`og_propagate`)
-- Calculating fuel consumption (`og_fuel_consumption`)
-- Proper memory management
+The example demonstrates basic usage of the OrbitalGuard C API through WebAssembly:
+
+1. **TLE Parsing**: Convert Two-Line Element sets to internal orbital elements
+2. **Orbit Propagation**: Calculate satellite position and velocity at future times
+3. **Maneuver Planning**: Plan collision avoidance maneuvers using Gregorian calendar time
+4. **Fuel Consumption**: Estimate propellant requirements for maneuvers
+5. **Memory Management**: Proper cleanup of allocated resources
+
+Key API functions used:
+- `og_parse_tle()` - Parse TLE data
+- `og_propagate()` - Propagate orbit to specified time
+- `og_plan_maneuver()` - Plan maneuvers with Gregorian time input
+- `og_fuel_consumption()` - Calculate fuel requirements
+- `og_free_elements()` - Clean up memory
+
+**Time Format**: The API now uses Gregorian calendar time (`gregorian_time_t` structure) instead of Julian dates for better usability. Time structures contain year, month, day, hour, minute, and second fields.
 
 ## Limitations
 
