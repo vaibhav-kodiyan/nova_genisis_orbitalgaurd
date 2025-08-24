@@ -1,5 +1,4 @@
-#ifndef MANEUVER_H
-#define MANEUVER_H
+#pragma once
 
 #include "types.h"
 
@@ -61,5 +60,3 @@ double isp_default_chemical();
  * @return Electric Isp in seconds (3000 s)
  */
 double isp_electric();
-
-#endif // MANEUVER_H
