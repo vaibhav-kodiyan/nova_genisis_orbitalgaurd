@@ -1,7 +1,9 @@
 #include "maneuver.h"
+#include "propagation.h"
 #include "constants.h"
 #include <cmath>
 #include <cstdio>
+#include <cstring>
 #include <cassert>
 
 // Test tolerances
@@ -80,6 +82,7 @@ void test_plan_avoidance() {
     int result1 = plan_avoidance(&primary, &secondary, encounter_time, 
                                 target_distance, max_delta_v, &result_maneuver);
     assert(result1 == 0); // Should succeed
+    (void)result1; // Suppress unused variable warning
     
     // Check that delta-v magnitude is reasonable
     double dv_mag = sqrt(result_maneuver.delta_v[0]*result_maneuver.delta_v[0] + 
@@ -140,6 +143,7 @@ void test_apply_maneuver() {
     double minutes_offset = (maneuver.epoch - elements.epoch) * MINUTES_PER_DAY;
     int prop_result = propagate(&elements, minutes_offset, &pre_state);
     assert(prop_result == PROPAGATION_SUCCESS);
+    (void)prop_result; // Suppress unused variable warning
     
     // Apply maneuver
     StateVectorECI post_state;
@@ -160,6 +164,7 @@ void test_apply_maneuver() {
     assert(is_close(post_state.v[0], expected_vx, VELOCITY_TOLERANCE));
     assert(is_close(post_state.v[1], expected_vy, VELOCITY_TOLERANCE));
     assert(is_close(post_state.v[2], expected_vz, VELOCITY_TOLERANCE));
+    (void)expected_vx; (void)expected_vy; (void)expected_vz; // Suppress warnings
     printf("  ✓ Velocity incremented: [%.6f, %.6f, %.6f] km/s\n", 
            post_state.v[0], post_state.v[1], post_state.v[2]);
     
