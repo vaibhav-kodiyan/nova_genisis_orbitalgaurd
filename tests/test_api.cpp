@@ -1,6 +1,7 @@
 #include "api.h"
 #include "propagation.h"
 #include "types.h"
+#include "time_utils.h"
 #include <iostream>
 #include <cassert>
 #include <cstring>
@@ -113,6 +114,9 @@ void test_screening_smoke() {
     assert(strcmp(encounters[0].id_a, "SAT1") == 0);
     assert(strcmp(encounters[0].id_b, "SAT2") == 0);
     
+    // Check that TCA time is set (should be current time)
+    assert(encounters[0].tca_time.year > 2020);
+    
     // Test with 100 km threshold - should find 3 encounters (all pairs)
     count = og_screen(states, ids, 3, 100.0, encounters, 10);
     assert(count == 3);
@@ -134,12 +138,17 @@ void test_maneuver_sanity() {
     
     og_maneuver_t maneuver;
     
+    // Create encounter time (January 2, 2023)
+    gregorian_time_t encounter_time = {2023, 1, 2, 12, 0, 0.0};
+    
     // Test maneuver planning
-    int result = og_plan_maneuver(primary, secondary, 2460002.0, 10.0, 100.0, &maneuver);
+    int result = og_plan_maneuver(primary, secondary, &encounter_time, 10.0, 100.0, &maneuver);
     assert(result == 0);
     
     // Check that maneuver structure is filled
-    assert(maneuver.epoch > 0);
+    assert(maneuver.time.year == 2023);
+    assert(maneuver.time.month == 1);
+    assert(maneuver.time.day == 2);
     assert(strlen(maneuver.id) > 0);
     
     // Delta-V magnitude should be reasonable
@@ -189,10 +198,45 @@ void test_lifecycle() {
     std::cout << "✓ Lifecycle test passed" << std::endl;
 }
 
+void test_time_utilities() {
+    std::cout << "Running test_time_utilities..." << std::endl;
+    
+    // Test Gregorian to Julian conversion
+    gregorian_time_t greg = {2023, 1, 1, 12, 0, 0.0};
+    double jd = gregorian_to_julian(&greg);
+    assert(jd > 2459000.0 && jd < 2461000.0); // Reasonable Julian date for 2023
+    
+    // Test Julian to Gregorian conversion (round trip)
+    gregorian_time_t greg_back;
+    julian_to_gregorian(jd, &greg_back);
+    assert(greg_back.year == 2023);
+    assert(greg_back.month == 1);
+    assert(greg_back.day == 1);
+    assert(greg_back.hour == 12);
+    
+    // Test ISO 8601 parsing
+    gregorian_time_t parsed_time;
+    int result = parse_iso8601_to_gregorian("2023-01-01T12:00:00", &parsed_time);
+    assert(result == 0);
+    assert(parsed_time.year == 2023);
+    assert(parsed_time.month == 1);
+    assert(parsed_time.day == 1);
+    assert(parsed_time.hour == 12);
+    
+    // Test ISO 8601 formatting
+    char buffer[64];
+    int len = format_gregorian_to_iso8601(&greg, buffer, sizeof(buffer));
+    assert(len > 0);
+    assert(strncmp(buffer, "2023-01-01T12:00:00", 19) == 0);
+    
+    std::cout << "✓ Time utilities test passed" << std::endl;
+}
+
 int main() {
     std::cout << "Running API tests..." << std::endl;
     
     try {
+        test_time_utilities();
         test_tle_parsing();
         test_propagation_parity();
         test_screening_smoke();
