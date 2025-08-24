@@ -158,7 +158,7 @@ void og_free_elements(void* elements) {
     delete static_cast<OrbitalElements*>(elements);
 }
 
-// Propagation - stub
+// Propagation
 int og_propagate(void* elements, double minutes, 
                 double* out_state3, double* out_vel3) {
     clear_error();
@@ -169,9 +169,41 @@ int og_propagate(void* elements, double minutes,
         return -1;
     }
     
-    // TODO: Implement propagation bridge
-    set_error("og_propagate not yet implemented");
-    return -1;
+    OrbitalElements* elem = static_cast<OrbitalElements*>(elements);
+    StateVectorECI state;
+    
+    // Call internal propagation function
+    int result = propagate(elem, minutes, &state);
+    
+    if (result == PROPAGATION_SUCCESS) {
+        // Copy position and velocity to output arrays
+        out_state3[0] = state.r[0];
+        out_state3[1] = state.r[1];
+        out_state3[2] = state.r[2];
+        
+        out_vel3[0] = state.v[0];
+        out_vel3[1] = state.v[1];
+        out_vel3[2] = state.v[2];
+        
+        return 0;
+    } else {
+        // Map internal error codes to API error codes
+        switch (result) {
+            case PROPAGATION_ERROR_INVALID_INPUT:
+                set_error("Invalid input parameters for propagation");
+                break;
+            case PROPAGATION_ERROR_CONVERGENCE:
+                set_error("Kepler equation failed to converge");
+                break;
+            case PROPAGATION_ERROR_NAN_RESULT:
+                set_error("Propagation resulted in NaN values");
+                break;
+            default:
+                set_error("Unknown propagation error");
+                break;
+        }
+        return result;
+    }
 }
 
 // Screening - stub
