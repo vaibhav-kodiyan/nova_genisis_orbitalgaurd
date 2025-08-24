@@ -62,8 +62,74 @@ double fuel_consumption(double delta_v_km_s, double specific_impulse_s,
 int plan_avoidance(const OrbitalElements* primary, const OrbitalElements* secondary,
                   double encounter_time, double target_distance_km, 
                   double max_delta_v_mps, Maneuver* out_maneuver) {
-    // TODO: Implementation placeholder
-    return -1;
+    // Input validation
+    if (!primary || !out_maneuver) {
+        return -1;
+    }
+    
+    // Initialize output maneuver
+    memset(out_maneuver, 0, sizeof(Maneuver));
+    
+    // Compute time difference (encounter_time is in Julian date, same as repo timebase)
+    double current_time = primary->epoch; // Use primary's epoch as reference
+    double delta_t_days = encounter_time - current_time;
+    double delta_t_seconds = delta_t_days * SECONDS_PER_DAY;
+    
+    // Check if encounter time is in the past
+    if (delta_t_seconds <= 0.0) {
+        return -1; // Cannot plan maneuver for past encounter
+    }
+    
+    // Heuristic: along-track displacement ≈ Δv * Δt
+    // Required scalar Δv ≈ target_distance_km * 1000 / Δt (m/s)
+    double required_dv_ms = (target_distance_km * 1000.0) / delta_t_seconds;
+    
+    // Check if required delta-v exceeds maximum
+    if (required_dv_ms > max_delta_v_mps) {
+        return -1; // Required delta-v too large
+    }
+    
+    // Get current state vector to determine velocity direction
+    StateVectorECI current_state;
+    int prop_result = propagate(primary, 0.0, &current_state); // Propagate to current epoch
+    if (prop_result != PROPAGATION_SUCCESS) {
+        return -1; // Propagation failed
+    }
+    
+    // Normalize velocity vector to get along-track direction
+    double velocity_unit[3];
+    normalize_vector(current_state.v, velocity_unit);
+    
+    // Create maneuver along velocity direction
+    out_maneuver->delta_v[0] = velocity_unit[0] * required_dv_ms;
+    out_maneuver->delta_v[1] = velocity_unit[1] * required_dv_ms;
+    out_maneuver->delta_v[2] = velocity_unit[2] * required_dv_ms;
+    
+    // Set execution time to encounter time (or slightly before for practical execution)
+    out_maneuver->epoch = encounter_time;
+    
+    // Generate deterministic ID
+    long long epoch_int = (long long)(encounter_time * 1000000); // Microsecond precision
+    snprintf(out_maneuver->id, sizeof(out_maneuver->id), "AVOID_%lld", epoch_int);
+    
+    // Estimate fuel cost using default parameters
+    // Note: Using sentinel values for masses as they may not be available
+    // Caller should validate fuel availability separately
+    double dry_mass = 1000.0;      // kg, placeholder
+    double prop_mass = 100.0;      // kg, placeholder
+    double efficiency = 1.0;       // Perfect efficiency
+    
+    out_maneuver->fuel_cost = fuel_consumption(required_dv_ms / 1000.0, // Convert to km/s
+                                              isp_default_chemical(),
+                                              dry_mass, prop_mass, efficiency);
+    
+    // If masses are not meaningful, set fuel_cost to -1.0 as sentinel
+    // TODO: Source actual spacecraft masses from repository if available
+    if (dry_mass <= 0.0 || prop_mass <= 0.0) {
+        out_maneuver->fuel_cost = -1.0;
+    }
+    
+    return 0; // Success
 }
 
 void apply_maneuver(const OrbitalElements* elements, const Maneuver* m,
