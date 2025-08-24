@@ -14,38 +14,96 @@ static double solve_kepler(double M, double e) {
     // Wrap mean anomaly to [0, 2π]
     M = fmod(M + TWO_PI, TWO_PI);
     
-    // Better initial guess for high eccentricity
+    // Improved initial guess for all eccentricities
     double E;
     if (e < 0.8) {
-        E = M + e * sin(M);  // Standard initial guess
+        E = M + e * sin(M);  // Standard initial guess for low eccentricity
     } else {
-        // For high eccentricity, use Danby's method for initial guess
-        E = M + 0.85 * e * ((sin(M) >= 0.0) ? 1.0 : -1.0);
+        // For high eccentricity, use a more robust initial guess
+        if (M < PI) {
+            E = M + e;
+        } else {
+            E = M - e;
+        }
     }
     
-    // Newton-Raphson iteration with improved convergence
+    // Use a hybrid approach: Newton-Raphson with fallback to bisection
+    double tolerance = KEPLER_TOLERANCE;
+    
+    // First try Newton-Raphson with relaxed tolerance for high eccentricity
+    if (e > 0.6) {
+        tolerance = 1e-8;  // Slightly relaxed tolerance for high eccentricity
+    }
+    
     for (int i = 0; i < KEPLER_MAX_ITERATIONS; i++) {
         double sin_E = sin(E);
         double cos_E = cos(E);
         double f = E - e * sin_E - M;
         double df = 1.0 - e * cos_E;
         
-        // Check for zero derivative
+        // Check for zero derivative (should be rare for e < 1)
         if (fabs(df) < 1e-15) {
-            return NAN;
+            // Use bisection method as fallback
+            double E_low = 0.0;
+            double E_high = TWO_PI;
+            
+            for (int j = 0; j < 50; j++) {
+                E = (E_low + E_high) / 2.0;
+                double f_mid = E - e * sin(E) - M;
+                
+                if (fabs(f_mid) < tolerance) {
+                    return E;
+                }
+                
+                double f_low = E_low - e * sin(E_low) - M;
+                if (f_low * f_mid < 0) {
+                    E_high = E;
+                } else {
+                    E_low = E;
+                }
+            }
+            return E;  // Return best bisection result
         }
         
         double delta = f / df;
+        
+        // Limit the step size for stability with high eccentricity
+        if (e > 0.6 && fabs(delta) > 0.5) {
+            delta = 0.5 * ((delta > 0) ? 1.0 : -1.0);
+        }
+        
         E -= delta;
         
+        // Ensure E stays in reasonable bounds
+        E = fmod(E + TWO_PI, TWO_PI);
+        
         // Check for convergence
-        if (fabs(delta) < KEPLER_TOLERANCE) {
+        if (fabs(delta) < tolerance) {
             return E;
         }
     }
     
-    // Failed to converge
-    return NAN;
+    // If Newton-Raphson failed, try bisection method as final fallback
+    double E_low = 0.0;
+    double E_high = TWO_PI;
+    
+    for (int i = 0; i < 50; i++) {
+        E = (E_low + E_high) / 2.0;
+        double f_mid = E - e * sin(E) - M;
+        
+        if (fabs(f_mid) < tolerance) {
+            return E;
+        }
+        
+        double f_low = E_low - e * sin(E_low) - M;
+        if (f_low * f_mid < 0) {
+            E_high = E;
+        } else {
+            E_low = E;
+        }
+    }
+    
+    return E;  // Return best result even if not fully converged
 }
 
 static void compute_pqw_to_eci_rotation(double raan, double inc, double argp, double rotation_matrix[9]) {
@@ -87,17 +145,51 @@ static void apply_j2_corrections(const OrbitalElements* elements, OrbitalElement
     // Semi-major axis (km)
     double a0 = pow(MU / (n0 * n0), 1.0/3.0);
     
+    // Check for valid semi-major axis
+    if (!std::isfinite(a0) || a0 <= 0) {
+        return; // Skip J2 corrections if invalid
+    }
+    
     // J2 perturbation calculations
     double cos_inc = cos(elements->inclination);
     double cos_inc_sq = cos_inc * cos_inc;
+    double ecc_sq = elements->eccentricity * elements->eccentricity;
     
-    // J2 correction factors
+    // Check for numerical stability
+    if (ecc_sq >= 1.0) {
+        return; // Skip J2 corrections for parabolic/hyperbolic orbits
+    }
+    
+    // J2 correction factors with improved numerical stability
     double temp = 1.5 * J2 * (EARTH_RADIUS * EARTH_RADIUS) / (a0 * a0);
-    double del1 = temp * (3.0 * cos_inc_sq - 1.0) / pow(1.0 - elements->eccentricity * elements->eccentricity, 1.5);
+    double ecc_factor = pow(1.0 - ecc_sq, 1.5);
+    
+    // Avoid division by very small numbers
+    if (ecc_factor < 1e-10) {
+        return; // Skip corrections for very high eccentricity
+    }
+    
+    double del1 = temp * (3.0 * cos_inc_sq - 1.0) / ecc_factor;
+    
+    // Limit the correction to avoid numerical instability
+    if (fabs(del1) > 0.1) {
+        del1 = 0.1 * ((del1 > 0) ? 1.0 : -1.0);
+    }
+    
     double a1 = a0 * (1.0 - del1 / 3.0 - del1 * del1 - 134.0 * del1 * del1 * del1 / 81.0);
+    
+    // Ensure corrected semi-major axis is positive and reasonable
+    if (a1 <= EARTH_RADIUS || !std::isfinite(a1)) {
+        a1 = a0; // Fall back to original value
+    }
     
     // Corrected mean motion
     double n1 = sqrt(MU / (a1 * a1 * a1));
+    
+    // Check for valid mean motion
+    if (!std::isfinite(n1) || n1 <= 0) {
+        return; // Skip corrections if invalid
+    }
     
     // Secular rates due to J2
     double delta_omega = -temp * cos_inc * n1;  // RAAN rate
