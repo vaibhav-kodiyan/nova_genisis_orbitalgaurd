@@ -55,8 +55,46 @@ set(SOURCES
     src/screening.cpp
 )
 
+# API source files
+set(API_SOURCES
+    ${SOURCES}
+    src/api.cpp
+)
+
 # Create static library
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
+
+# Create API libraries (both static and shared)
+add_library(oglib_static STATIC ${API_SOURCES})
+add_library(oglib_shared SHARED ${API_SOURCES})
+
+# Set library properties
+set_target_properties(oglib_static PROPERTIES
+    OUTPUT_NAME oglib
+    PUBLIC_HEADER "include/api.h"
+)
+
+set_target_properties(oglib_shared PROPERTIES
+    OUTPUT_NAME oglib
+    VERSION ${PROJECT_VERSION}
+    SOVERSION ${PROJECT_VERSION_MAJOR}
+    PUBLIC_HEADER "include/api.h"
+)
+
+# Set symbol visibility for shared library
+if(NOT WIN32)
+    set_target_properties(oglib_shared PROPERTIES
+        CXX_VISIBILITY_PRESET hidden
+        VISIBILITY_INLINES_HIDDEN ON
+    )
+endif()
+
+# Windows DLL export
+if(WIN32)
+    set_target_properties(oglib_shared PROPERTIES
+        WINDOWS_EXPORT_ALL_SYMBOLS ON
+    )
+endif()
 
 # Link SGP4 to library and expose includes when enabled
 if(ENABLE_SGP4)
@@ -94,10 +132,11 @@ if(EMSCRIPTEN)
 endif()
 
 # Installation
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME} oglib_static oglib_shared
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin
+    PUBLIC_HEADER DESTINATION include
 )
 
 install(DIRECTORY include/ DESTINATION include)
