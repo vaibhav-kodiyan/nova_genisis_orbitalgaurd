@@ -42,6 +42,7 @@ if(ENABLE_SGP4)
         GIT_TAG master
         CMAKE_ARGS
             -DSGP4_WITH_TESTS=OFF
+        PATCH_COMMAND git apply ${CMAKE_CURRENT_SOURCE_DIR}/sgp4_cmake_fix.patch || true
     )
     # Ensure cache in dependency is set even if previously configured
     set(SGP4_WITH_TESTS OFF CACHE BOOL "" FORCE)
