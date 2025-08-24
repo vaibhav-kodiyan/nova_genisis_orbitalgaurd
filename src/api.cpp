@@ -206,7 +206,7 @@ int og_propagate(void* elements, double minutes,
     }
 }
 
-// Screening - stub
+// Screening
 size_t og_screen(const double* const* states, const char** ids,
                 size_t sat_count, double max_distance_km,
                 og_encounter_t* out_encounters, size_t max_encounters) {
@@ -223,9 +223,44 @@ size_t og_screen(const double* const* states, const char** ids,
         return 0;
     }
     
-    // TODO: Implement screening bridge
-    set_error("og_screen not yet implemented");
-    return 0;
+    if (max_encounters == 0) {
+        return 0;
+    }
+    
+    size_t encounter_count = 0;
+    
+    // Simple pairwise distance screening (single time point)
+    for (size_t i = 0; i < sat_count - 1 && encounter_count < max_encounters; i++) {
+        for (size_t j = i + 1; j < sat_count && encounter_count < max_encounters; j++) {
+            if (!states[i] || !states[j] || !ids[i] || !ids[j]) {
+                continue; // Skip invalid entries
+            }
+            
+            // Calculate distance between satellites
+            double dx = states[i][0] - states[j][0];
+            double dy = states[i][1] - states[j][1];
+            double dz = states[i][2] - states[j][2];
+            double distance = sqrt(dx*dx + dy*dy + dz*dz);
+            
+            // Check if encounter meets distance criteria
+            if (distance <= max_distance_km) {
+                og_encounter_t* enc = &out_encounters[encounter_count];
+                
+                // Copy satellite IDs (safely)
+                strncpy(enc->id_a, ids[i], sizeof(enc->id_a) - 1);
+                enc->id_a[sizeof(enc->id_a) - 1] = '\0';
+                strncpy(enc->id_b, ids[j], sizeof(enc->id_b) - 1);
+                enc->id_b[sizeof(enc->id_b) - 1] = '\0';
+                
+                enc->min_distance_km = distance;
+                enc->tca_epoch = 0.0; // Current time (not specified in input)
+                
+                encounter_count++;
+            }
+        }
+    }
+    
+    return encounter_count;
 }
 
 // Maneuver planning - stub
