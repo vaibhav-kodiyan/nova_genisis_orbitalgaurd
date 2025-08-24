@@ -61,7 +61,7 @@ jobs:
     - name: Install CMake (Windows)
       if: runner.os == 'Windows'
       shell: pwsh
-      run: choco install cmake --version=3.24.0 -y
+      run: choco install cmake -y --no-progress
 
     - name: Install Ninja (Linux)
       if: runner.os == 'Linux'
