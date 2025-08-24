@@ -1,5 +1,5 @@
 {
-    "version": 3,
+    "version": 2,
     "configurePresets": [
         {
             "name": "linux-gcc-debug",
@@ -11,11 +11,6 @@
                 "CMAKE_C_COMPILER": "gcc",
                 "CMAKE_CXX_COMPILER": "g++",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-            },
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
             }
         },
         {
@@ -28,11 +23,6 @@
                 "CMAKE_C_COMPILER": "gcc",
                 "CMAKE_CXX_COMPILER": "g++",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-            },
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
             }
         },
         {
@@ -45,11 +35,6 @@
                 "CMAKE_C_COMPILER": "clang",
                 "CMAKE_CXX_COMPILER": "clang++",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-            },
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
             }
         },
         {
@@ -62,11 +47,6 @@
                 "CMAKE_C_COMPILER": "clang",
                 "CMAKE_CXX_COMPILER": "clang++",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-            },
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
             }
         },
         {
@@ -77,11 +57,6 @@
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_CONFIGURATION_TYPES": "Debug;Release"
-            },
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
             }
         },
         {
@@ -92,11 +67,6 @@
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_CONFIGURATION_TYPES": "Debug;Release"
-            },
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
             }
         },
         {
@@ -109,11 +79,6 @@
                 "CMAKE_C_COMPILER": "clang",
                 "CMAKE_CXX_COMPILER": "clang++",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-            },
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Darwin"
             }
         },
         {
@@ -126,11 +91,6 @@
                 "CMAKE_C_COMPILER": "clang",
                 "CMAKE_CXX_COMPILER": "clang++",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-            },
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Darwin"
             }
         }
     ],

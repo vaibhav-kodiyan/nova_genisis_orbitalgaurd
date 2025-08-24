@@ -42,10 +42,20 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup CMake
-      uses: jwlawson/actions-setup-cmake@v1.14
-      with:
-        cmake-version: '3.20'
+    - name: Install CMake 3.23+
+      run: |
+        if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+          sudo apt-get update
+          sudo apt-get install -y wget
+          wget https://github.com/Kitware/CMake/releases/download/v3.24.0/cmake-3.24.0-linux-x86_64.sh
+          sudo mkdir -p /opt/cmake
+          sudo sh cmake-3.24.0-linux-x86_64.sh --prefix=/opt/cmake --skip-license
+          echo "/opt/cmake/bin" >> $GITHUB_PATH
+        elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+          brew install cmake
+        elif [ "${{ matrix.os }}" = "windows-latest" ]; then
+          choco install cmake --version=3.24.0 -y
+        fi
 
     - name: Install Ninja (Linux/macOS)
       if: matrix.os != 'windows-latest'
