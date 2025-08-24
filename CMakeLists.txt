@@ -26,18 +26,49 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 # Include directories
 include_directories(include)
 
+# Optional: SGP4 integration
+option(ENABLE_SGP4 "Enable SGP4 propagation support" ON)
+if(ENABLE_SGP4)
+    include(FetchContent)
+    FetchContent_Declare(
+        sgp4_ext
+        GIT_REPOSITORY https://github.com/magnific0/SGP4.git
+        # TODO: Pin to a specific commit for full reproducibility, e.g., GIT_TAG <commit-hash>
+        GIT_TAG master
+        CMAKE_ARGS
+            -DSGP4_WITH_TESTS=OFF
+    )
+    # Ensure cache in dependency is set even if previously configured
+    set(SGP4_WITH_TESTS OFF CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(sgp4_ext)
+endif()
+
 # Source files
 set(SOURCES
-    src/constants.cpp
     src/types.cpp
 )
 
 # Create static library
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
 
+# Link SGP4 to library and expose includes when enabled
+if(ENABLE_SGP4)
+    # The fetched project defines a static target named SGP4
+    target_link_libraries(${PROJECT_NAME} PUBLIC SGP4)
+    # Expose the fetched source dir so includes like "SGP4/SGP4/SGP4.h" resolve
+    if(DEFINED sgp4_ext_SOURCE_DIR)
+        target_include_directories(${PROJECT_NAME} PUBLIC ${sgp4_ext_SOURCE_DIR})
+    endif()
+endif()
+
 # Optional executable for testing
 add_executable(${PROJECT_NAME}_test src/main.cpp)
-target_link_libraries(${PROJECT_NAME}_test ${PROJECT_NAME})
+# Link library and also SGP4 when enabled (use keyword signature consistently)
+target_link_libraries(${PROJECT_NAME}_test PRIVATE ${PROJECT_NAME})
+if(ENABLE_SGP4)
+    # Also link SGP4 directly to the test exe (in case it includes headers directly)
+    target_link_libraries(${PROJECT_NAME}_test PRIVATE SGP4)
+endif()
 
 # Emscripten detection and WebAssembly support
 if(EMSCRIPTEN)

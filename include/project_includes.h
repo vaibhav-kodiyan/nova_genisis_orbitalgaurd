@@ -1,7 +1,7 @@
-#pragma once //to avoid multipe initialisations
+#pragma once // to avoid multiple initializations
 using namespace std;
 
-//centralized header file
+// centralized header file
 #include <vector>
 #include <array>
 #include <string>
@@ -12,4 +12,8 @@ using namespace std;
 #include <algorithm>
 #include <iostream>
 #include <fstream>
+#include <cctype>
+#include <iomanip>
 
+// threshold distance in km for conjunction screening
+const double THRESHOLD_DISTANCE = 100.0;

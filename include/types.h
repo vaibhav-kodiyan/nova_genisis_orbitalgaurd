@@ -1,51 +1,63 @@
-#ifndef TYPES_H
-#define TYPES_H
+#pragma once
+// centralized std includes
+#include "project_includes.h"
 
-// Severity levels for encounter classification
-#define SEVERITY_COLLISION 0
-#define SEVERITY_CRITICAL  1
-#define SEVERITY_CLOSE     2
-#define SEVERITY_NOMINAL   3
+// collision risk levels
+enum Severity {
+    NONE = 0,   // no risk
+    LOW = 1,    // safe distance
+    MEDIUM = 2, // getting close
+    HIGH = 3,   // high risk
+    CRASH = 4   // collision imminent
+};
 
-// Two-Line Element data structure
+// stores TLE (Two-Line Element) data
 struct TLE {
-    char name[24];   // Satellite name
-    char line1[70];  // First line of TLE
-    char line2[70];  // Second line of TLE
+    string name;       // satellite name
+    char   line1[130]; // first line of TLE (C-style, 129 chars + '\0')
+    char   line2[130]; // second line of TLE (C-style, 129 chars + '\0')
 };
 
-// Orbital elements derived from TLE
+// orbital elements for calculations
 struct OrbitalElements {
-    double epoch;           // Epoch time (Julian date)
-    double mean_motion;     // Mean motion (revolutions per day)
-    double eccentricity;    // Orbital eccentricity
-    double inclination;     // Inclination (radians)
-    double raan;           // Right ascension of ascending node (radians)
-    double arg_perigee;    // Argument of perigee (radians)
-    double mean_anomaly;   // Mean anomaly (radians)
-    double bstar;          // BSTAR drag term
-    double ndot;           // First derivative of mean motion
-    double nddot;          // Second derivative of mean motion
+    double semi_major_axis;  // orbit size in kilometers
+    double eccentricity;     // shape of orbit (0=circular, <1=elliptical)
+    double tilt;            // orbit tilt in radians (was inclination)
+    double node;            // where orbit crosses equator in radians (was raan)
+    double perigee_angle;   // angle to closest approach in radians (was arg_perigee)
+    double position;        // current position in orbit in radians (was true_anomaly)
+    double time;            // reference time in Julian date (was epoch)
 };
 
-// Earth-Centered Inertial state vector
+
+// position and velocity in space
 struct StateVectorECI {
-    double t;       // Time (Julian date)
-    double r[3];    // Position vector (km)
-    double v[3];    // Velocity vector (km/s)
+    double t;       // time in Julian date
+    double r[3];    // position vector in kilometers
+    double v[3];    // velocity vector in kilometers per second
 };
 
-// Satellite encounter data
-struct Encounter {
-    char id[64];              // Encounter identifier
-    double tca;               // Time of closest approach (Julian date)
-    double distance;          // Minimum distance (km)
-    double relative_velocity; // Relative velocity at TCA (km/s)
-    int severity;             // Severity level (0-3)
-    double probability;       // Collision probability
+struct satellite_data{
+    string name; //satellite name (will work as an identifier)
+    OrbitalElements orbital_data;
+    StateVectorECI state_data;
+    TLE tle; // original TLE for re-propagation when needed
 };
 
-// Function declarations
-const char* severity_to_string(int severity);
+struct satellites_array{
+    vector<satellite_data> satellites;
+};
 
-#endif // TYPES_H
+struct conjunction_pairs{
+    satellite_data sat1;
+    satellite_data sat2;
+    double distance;
+    
+};
+
+// functions -
+vector<TLE> parseTLEfile(const string &filename);
+string severity_to_string(int level);
+
+
+
