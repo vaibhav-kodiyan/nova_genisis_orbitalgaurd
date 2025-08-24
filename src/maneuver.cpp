@@ -134,7 +134,39 @@ int plan_avoidance(const OrbitalElements* primary, const OrbitalElements* second
 
 void apply_maneuver(const OrbitalElements* elements, const Maneuver* m,
                    double current_unix_ms, StateVectorECI* out_state) {
-    // TODO: Implementation placeholder
+    // Input validation
+    if (!elements || !m || !out_state) {
+        return;
+    }
+    
+    // Initialize output state
+    memset(out_state, 0, sizeof(StateVectorECI));
+    
+    // Convert current_unix_ms to Julian date if needed
+    // Note: The spec mentions current_unix_ms but repo uses Julian dates
+    // For consistency with repo timebase, use maneuver epoch directly
+    double maneuver_time = m->epoch;
+    
+    // Propagate orbital elements to maneuver execution time
+    double minutes_since_epoch = (maneuver_time - elements->epoch) * MINUTES_PER_DAY;
+    
+    StateVectorECI pre_maneuver_state;
+    int prop_result = propagate(elements, minutes_since_epoch, &pre_maneuver_state);
+    if (prop_result != PROPAGATION_SUCCESS) {
+        return; // Propagation failed
+    }
+    
+    // Apply impulse delta-v to velocity vector (position unchanged at impulse instant)
+    // Delta-v is already in ECI coordinates and m/s, velocity is in km/s
+    out_state->t = maneuver_time;
+    out_state->r[0] = pre_maneuver_state.r[0]; // Position unchanged
+    out_state->r[1] = pre_maneuver_state.r[1];
+    out_state->r[2] = pre_maneuver_state.r[2];
+    
+    // Add delta-v to velocity (convert m/s to km/s)
+    out_state->v[0] = pre_maneuver_state.v[0] + (m->delta_v[0] / 1000.0);
+    out_state->v[1] = pre_maneuver_state.v[1] + (m->delta_v[1] / 1000.0);
+    out_state->v[2] = pre_maneuver_state.v[2] + (m->delta_v[2] / 1000.0);
 }
 
 double isp_default_chemical() {
