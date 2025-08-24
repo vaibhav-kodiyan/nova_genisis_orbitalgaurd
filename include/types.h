@@ -23,10 +23,16 @@ struct OrbitalElements {
     double semi_major_axis;  // orbit size in kilometers
     double eccentricity;     // shape of orbit (0=circular, <1=elliptical)
     double tilt;            // orbit tilt in radians (was inclination)
+    double inclination;     // orbit tilt in radians (alias for compatibility)
     double node;            // where orbit crosses equator in radians (was raan)
+    double raan;            // right ascension of ascending node (alias for compatibility)
     double perigee_angle;   // angle to closest approach in radians (was arg_perigee)
+    double arg_perigee;     // argument of perigee (alias for compatibility)
     double position;        // current position in orbit in radians (was true_anomaly)
     double time;            // reference time in Julian date (was epoch)
+    double epoch;           // reference time in Julian date (alias for compatibility)
+    double mean_motion;     // mean motion in revolutions per day
+    double mean_anomaly;    // mean anomaly in radians
 };
 
 

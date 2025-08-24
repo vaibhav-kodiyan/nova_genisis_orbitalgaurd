@@ -73,9 +73,7 @@ void test_time_propagation() {
     elements.raan = 0.0;
     elements.arg_perigee = 0.0;
     elements.mean_anomaly = 0.0;
-    elements.bstar = 0.0;
-    elements.ndot = 0.0;
-    elements.nddot = 0.0;
+    // Note: bstar, ndot, nddot are not part of the current OrbitalElements struct
     
     StateVectorECI state1, state2, state3;
     
@@ -134,9 +132,7 @@ void test_high_eccentricity() {
     elements.raan = 0.0;
     elements.arg_perigee = 0.0;
     elements.mean_anomaly = 0.0;
-    elements.bstar = 0.0;
-    elements.ndot = 0.0;
-    elements.nddot = 0.0;
+    // Note: bstar, ndot, nddot are not part of the current OrbitalElements struct
     
     StateVectorECI state;
     int result = propagate(&elements, 0.0, &state);
@@ -165,9 +161,7 @@ void test_j2_effects() {
     elements.raan = 0.0;
     elements.arg_perigee = 0.0;
     elements.mean_anomaly = 0.0;
-    elements.bstar = 0.0;
-    elements.ndot = 0.0;
-    elements.nddot = 0.0;
+    // Note: bstar, ndot, nddot are not part of the current OrbitalElements struct
     
     StateVectorECI state_short, state_long;
     

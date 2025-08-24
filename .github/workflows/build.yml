@@ -87,17 +87,17 @@ jobs:
     - name: Configure CMake (Linux GCC)
       if: matrix.os == 'ubuntu-latest' && matrix.compiler.name == 'gcc'
       run: |
-        cmake -B build -S . -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_C_COMPILER=gcc-10 -DCMAKE_CXX_COMPILER=g++-10
+        cmake -B build -S . -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_C_COMPILER=gcc-10 -DCMAKE_CXX_COMPILER=g++-10 -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
     - name: Configure CMake (Linux Clang)
       if: matrix.os == 'ubuntu-latest' && matrix.compiler.name == 'clang'
       run: |
-        cmake -B build -S . -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_C_COMPILER=clang-14 -DCMAKE_CXX_COMPILER=clang++-14
+        cmake -B build -S . -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_C_COMPILER=clang-14 -DCMAKE_CXX_COMPILER=clang++-14 -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
     - name: Configure CMake (Windows MSVC)
       if: matrix.os == 'windows-latest'
       run: |
-        cmake -B build -S . -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -G "Visual Studio 17 2022" -A x64
+        cmake -B build -S . -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -G "Visual Studio 17 2022" -A x64 -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
     - name: Build
       run: |
