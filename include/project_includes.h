@@ -14,6 +14,7 @@ using namespace std;
 #include <fstream>
 #include <cctype>
 #include <iomanip>
+#include <cstdlib>
 
 // threshold distance in km for conjunction screening
 const double THRESHOLD_DISTANCE = 100.0;

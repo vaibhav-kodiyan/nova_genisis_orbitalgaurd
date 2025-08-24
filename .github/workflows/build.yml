@@ -72,9 +72,11 @@ jobs:
         # Ensure Git is available for FetchContent
         git --version
 
-    - name: Setup MSVC (Windows)
+    - name: Set up MSVC
       if: matrix.os == 'windows-latest'
-      uses: microsoft/setup-msbuild@v2
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        toolset: 14.3  # v143
 
     - name: Ensure VS 2022 Build Tools installed (Windows)
       if: matrix.os == 'windows-latest'
@@ -118,7 +120,7 @@ jobs:
     - name: Configure CMake (Windows MSVC)
       if: matrix.os == 'windows-latest'
       run: |
-        cmake -B build -S . -G "Visual Studio 16 2019" -A x64 -T v143
+        cmake -B build -S . -G "Visual Studio 17 2022" -A x64
 
     - name: Build
       run: |

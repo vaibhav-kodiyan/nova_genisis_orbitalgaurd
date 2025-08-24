@@ -1,0 +1,73 @@
+Start testing: Aug 24 21:08 UTC
+----------------------------------------------------------
+1/3 Testing: ConstantsTest
+1/3 Test: ConstantsTest
+Command: "/home/vaibhav_kodiyan_/projects/hackathon/build-release/test_constants"
+Directory: /home/vaibhav_kodiyan_/projects/hackathon/build-release
+"ConstantsTest" start time: Aug 24 21:08 UTC
+Output:
+----------------------------------------------------------
+Constants test passed!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"ConstantsTest" end time: Aug 24 21:08 UTC
+"ConstantsTest" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/3 Testing: TypesTest
+2/3 Test: TypesTest
+Command: "/home/vaibhav_kodiyan_/projects/hackathon/build-release/test_types"
+Directory: /home/vaibhav_kodiyan_/projects/hackathon/build-release
+"TypesTest" start time: Aug 24 21:08 UTC
+Output:
+----------------------------------------------------------
+Types test passed!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"TypesTest" end time: Aug 24 21:08 UTC
+"TypesTest" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/3 Testing: PropagationTest
+3/3 Test: PropagationTest
+Command: "/home/vaibhav_kodiyan_/projects/hackathon/build-release/test_propagation"
+Directory: /home/vaibhav_kodiyan_/projects/hackathon/build-release
+"PropagationTest" start time: Aug 24 21:08 UTC
+Output:
+----------------------------------------------------------
+Starting propagation tests...
+
+Running test_basic_propagation...
+  Position: [2613.44, 5535.99, 2607.34] km
+  Velocity: [-5.68071, 0.207594, 5.25323] km/s
+  PASSED
+
+Running test_time_propagation...
+  Position change over 30 min: 0 km
+  PASSED
+
+Running test_error_handling...
+  PASSED
+
+Running test_high_eccentricity...
+  High-e orbit position magnitude: 3065.04 km
+  PASSED
+
+Running test_j2_effects...
+  Position difference after 1 day: 0 km
+  PASSED
+
+All propagation tests PASSED!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"PropagationTest" end time: Aug 24 21:08 UTC
+"PropagationTest" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Aug 24 21:08 UTC
