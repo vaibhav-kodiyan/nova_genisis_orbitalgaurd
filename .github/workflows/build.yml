@@ -15,12 +15,25 @@ jobs:
         compiler:
           - { name: gcc, cc: gcc, cxx: g++ }
           - { name: clang, cc: clang, cxx: clang++ }
+          - { name: msvc, cc: cl, cxx: cl }
         exclude:
           # Windows doesn't have these compilers by default
           - os: windows-latest
-            compiler: { name: gcc, cc: gcc, cxx: g++ }
+            compiler:
+              name: gcc
+              cc: gcc
+              cxx: g++
           - os: windows-latest
-            compiler: { name: clang, cc: clang, cxx: clang++ }
+            compiler:
+              name: clang
+              cc: clang
+              cxx: clang++
+          # Linux doesn't have MSVC
+          - os: ubuntu-latest
+            compiler:
+              name: msvc
+              cc: cl
+              cxx: cl
 
     runs-on: ${{ matrix.os }}
     
@@ -51,7 +64,7 @@ jobs:
 
     - name: Setup MSVC (Windows)
       if: matrix.os == 'windows-latest'
-      uses: microsoft/setup-msbuild@v1.3
+      uses: microsoft/setup-msbuild@v2
 
     - name: Cache build directory
       uses: actions/cache@v3

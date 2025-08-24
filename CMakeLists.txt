@@ -12,16 +12,21 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Compiler flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
+# Compiler-specific flags
+if(MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    set(CMAKE_CXX_FLAGS_DEBUG "/Zi /Od /DDEBUG")
+    set(CMAKE_CXX_FLAGS_RELEASE "/O2 /DNDEBUG")
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
+    set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DDEBUG")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+endif()
 
 # Build types
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
 endif()
-
-set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DDEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
 # Include directories
 include_directories(include)
@@ -46,6 +51,7 @@ endif()
 # Source files
 set(SOURCES
     src/types.cpp
+    src/propagation.cpp
 )
 
 # Create static library
@@ -94,3 +100,21 @@ install(TARGETS ${PROJECT_NAME}
 )
 
 install(DIRECTORY include/ DESTINATION include)
+
+# Enable testing
+enable_testing()
+
+# Add test executable
+add_executable(test_constants tests/test_constants.cpp)
+target_link_libraries(test_constants ${PROJECT_NAME})
+
+add_executable(test_types tests/test_types.cpp)
+target_link_libraries(test_types ${PROJECT_NAME})
+
+add_executable(test_propagation tests/test_propagation.cpp)
+target_link_libraries(test_propagation ${PROJECT_NAME})
+
+# Add tests to CTest
+add_test(NAME ConstantsTest COMMAND test_constants)
+add_test(NAME TypesTest COMMAND test_types)
+add_test(NAME PropagationTest COMMAND test_propagation)
