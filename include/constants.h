@@ -24,3 +24,13 @@
 // Orbital mechanics constants
 #define KEPLER_TOLERANCE 1e-10
 #define KEPLER_MAX_ITERATIONS 30
+
+// Screening constants
+#define SYNC_TOLERANCE_S 60.0  // Time synchronization tolerance in seconds
+#define LOGISTIC_K 0.5         // Logistic function steepness parameter
+#define LOGISTIC_X0_KM 5.0     // Logistic function midpoint distance in km
+
+// Distance thresholds for severity classification (km)
+#define SEVERITY_THRESHOLD_1KM 1.0
+#define SEVERITY_THRESHOLD_5KM 5.0
+#define SEVERITY_THRESHOLD_25KM 25.0
