@@ -2,9 +2,21 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <cstdlib>
+#include <ctime>
 #include "../include/types.h"
 
+// Deterministic test setup
+void setup_deterministic_environment() {
+    // Set deterministic seed for any random operations
+    std::srand(42);
+    
+    // Ensure consistent locale
+    setlocale(LC_ALL, "C");
+}
+
 int main() {
+    setup_deterministic_environment();
     // Test Severity enum
     assert(NONE == 0);
     assert(LOW == 1);

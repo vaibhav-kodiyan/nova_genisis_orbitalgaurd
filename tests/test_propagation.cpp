@@ -2,11 +2,22 @@
 #include <cmath>
 #include <cassert>
 #include <cstring>
+#include <cstdlib>
+#include <ctime>
 #include "../include/propagation.h"
 #include "../include/constants.h"
 
 // Test tolerance for floating point comparisons
 #define TEST_TOLERANCE 1e-6
+
+// Deterministic test setup
+void setup_deterministic_environment() {
+    // Set deterministic seed for any random operations
+    std::srand(42);
+    
+    // Ensure consistent locale
+    setlocale(LC_ALL, "C");
+}
 
 // Helper function to check if two doubles are approximately equal
 bool approx_equal(double a, double b, double tolerance = TEST_TOLERANCE) {
@@ -188,6 +199,7 @@ void test_j2_effects() {
 }
 
 int main() {
+    setup_deterministic_environment();
     std::cout << "Starting propagation tests..." << std::endl << std::endl;
     
     try {

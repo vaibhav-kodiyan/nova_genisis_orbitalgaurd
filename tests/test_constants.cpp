@@ -1,9 +1,21 @@
 #include <cassert>
 #include <iostream>
 #include <cmath>
+#include <cstdlib>
+#include <ctime>
+
+// Deterministic test setup
+void setup_deterministic_environment() {
+    // Set deterministic seed for any random operations
+    std::srand(42);
+    
+    // Ensure consistent locale
+    setlocale(LC_ALL, "C");
+}
 
 // Basic constants test
 int main() {
+    setup_deterministic_environment();
     // Test mathematical constants
     const double PI = 3.14159265358979323846;
     const double EARTH_RADIUS = 6371.0; // km
