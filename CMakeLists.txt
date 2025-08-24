@@ -52,6 +52,7 @@ endif()
 set(SOURCES
     src/types.cpp
     src/propagation.cpp
+    src/screening.cpp
 )
 
 # Create static library
@@ -114,7 +115,11 @@ target_link_libraries(test_types ${PROJECT_NAME})
 add_executable(test_propagation tests/test_propagation.cpp)
 target_link_libraries(test_propagation ${PROJECT_NAME})
 
+add_executable(test_screening tests/test_screening.cpp)
+target_link_libraries(test_screening ${PROJECT_NAME})
+
 # Add tests to CTest
 add_test(NAME ConstantsTest COMMAND test_constants)
 add_test(NAME TypesTest COMMAND test_types)
 add_test(NAME PropagationTest COMMAND test_propagation)
+add_test(NAME ScreeningTest COMMAND test_screening)
