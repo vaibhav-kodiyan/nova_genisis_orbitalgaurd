@@ -33,6 +33,9 @@ include_directories(include)
 
 # Optional: SGP4 integration
 option(ENABLE_SGP4 "Enable SGP4 propagation support" ON)
+
+# Optional: WebAssembly build
+option(OG_BUILD_WASM "Build WebAssembly module" OFF)
 if(ENABLE_SGP4)
     include(FetchContent)
     FetchContent_Declare(
@@ -115,20 +118,25 @@ if(ENABLE_SGP4)
     target_link_libraries(${PROJECT_NAME}_test PRIVATE SGP4)
 endif()
 
-# Emscripten detection and WebAssembly support
-if(EMSCRIPTEN)
-    message(STATUS "Building with Emscripten for WebAssembly")
-    set_target_properties(${PROJECT_NAME} PROPERTIES
-        COMPILE_FLAGS "-s USE_PTHREADS=0"
-        LINK_FLAGS "-s WASM=1 -s EXPORTED_RUNTIME_METHODS=['ccall','cwrap']"
+# WebAssembly build support
+if(OG_BUILD_WASM AND EMSCRIPTEN)
+    message(STATUS "Building WebAssembly module with Emscripten")
+    
+    # Create WASM library with API
+    add_executable(oglib_wasm ${API_SOURCES})
+    set_target_properties(oglib_wasm PROPERTIES
+        SUFFIX ".js"
+        LINK_FLAGS "-s WASM=1 -s MODULARIZE=1 -s EXPORT_NAME='OrbitalGuard' -s EXPORTED_FUNCTIONS=_og_parse_tle,_og_free_elements,_og_propagate,_og_screen,_og_plan_maneuver,_og_fuel_consumption,_og_last_error -s EXPORTED_RUNTIME_METHODS=malloc,free"
     )
     
-    # Create WASM library
-    add_executable(${PROJECT_NAME}_wasm ${SOURCES})
-    set_target_properties(${PROJECT_NAME}_wasm PROPERTIES
-        SUFFIX ".js"
-        LINK_FLAGS "-s WASM=1 -s MODULARIZE=1 -s EXPORT_NAME='NovaGenesisOrbitalGuard'"
+    # Optional: Add environment and other flags
+    set_target_properties(oglib_wasm PROPERTIES
+        LINK_FLAGS "${CMAKE_TARGET_PROPERTY_LINK_FLAGS} -s ENVIRONMENT=web,node"
     )
+    
+    message(STATUS "WASM build configured. Use 'make oglib_wasm' to build.")
+elseif(OG_BUILD_WASM AND NOT EMSCRIPTEN)
+    message(WARNING "OG_BUILD_WASM=ON but Emscripten toolchain not detected. Skipping WASM build.")
 endif()
 
 # Installation
