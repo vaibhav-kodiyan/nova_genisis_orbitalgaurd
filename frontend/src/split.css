@@ -2,7 +2,7 @@
 .split-container {
   display: grid;
   grid-template-rows: 1fr 1fr;
-  height: 100vh;
+  height: 100%;
   gap: 12px;
   padding: 12px;
   background: #0f172a;
