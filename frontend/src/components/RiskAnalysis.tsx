@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import { useAppStore } from '../state/appStore';
 
-export function RiskAnalysis() {
+interface RiskAnalysisProps {
+  onRunAnalysis?: () => Promise<void>;
+}
+
+export function RiskAnalysis({ onRunAnalysis }: RiskAnalysisProps) {
   const {
     state,
     tracks,
@@ -18,21 +22,27 @@ export function RiskAnalysis() {
   const runAnalysis = async () => {
     if (!canRunAnalysis) return;
     
-    setIsRunning(true);
-    try {
-      const { wasmBridge } = await import('../domain/wasmBridge');
-      const result = wasmBridge.runAnalysis(tracks, 60); // 60 second sync tolerance
-      
-      setAnalysisResult(result);
-      transitionToAnalysed();
-      
-      const toast = await import('react-hot-toast');
-      toast.default.success('Analysis complete. Playback enabled.');
-    } catch (error) {
-      const toast = await import('react-hot-toast');
-      toast.default.error(`Analysis failed: ${error}`);
-    } finally {
-      setIsRunning(false);
+    if (onRunAnalysis) {
+      // Use the passed analysis function from App
+      await onRunAnalysis();
+    } else {
+      // Fallback to local implementation
+      setIsRunning(true);
+      try {
+        const { wasmBridge } = await import('../domain/wasmBridge');
+        const result = wasmBridge.runAnalysis(tracks, 60); // 60 second sync tolerance
+        
+        setAnalysisResult(result);
+        transitionToAnalysed();
+        
+        const toast = await import('react-hot-toast');
+        toast.default.success('Analysis complete. Playback enabled.');
+      } catch (error) {
+        const toast = await import('react-hot-toast');
+        toast.default.error(`Analysis failed: ${error}`);
+      } finally {
+        setIsRunning(false);
+      }
     }
   };
 

@@ -7,10 +7,12 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { ResultsTable, AnalysisResults } from './components/ResultsTable';
 import { wasmBridge } from './domain/wasmBridge';
 import { useAppStore } from './state/appStore';
+import { analyzeScenarioFromStore } from './lib/analyzeScenarioFromStore';
+import toast from 'react-hot-toast';
 import './split.css';
 
 export default function App() {
-  const { satelliteTles, debrisTles } = useAppStore();
+  const { satelliteTles, debrisTles, tracks } = useAppStore();
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<AnalysisResults | null>(null);
   const [errMsg, setErrMsg] = useState<string>('');
@@ -19,6 +21,23 @@ export default function App() {
     // Initialize WASM bridge on app start
     wasmBridge.init().catch(console.error);
   }, []);
+
+  const runAnalysis = async () => {
+    setIsRunning(true);
+    setErrMsg('');
+    
+    try {
+      const analysisResults = await analyzeScenarioFromStore(tracks);
+      setResults(analysisResults);
+      toast.success('Analysis complete. Results displayed below.');
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Analysis failed';
+      setErrMsg(errorMsg);
+      toast.error(errorMsg);
+    } finally {
+      setIsRunning(false);
+    }
+  };
 
   const hasData = satelliteTles.length > 0 && debrisTles.length > 0;
 
@@ -40,7 +59,7 @@ export default function App() {
       {/* Main Layout */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Control Panel */}
-        <ControlPanel />
+        <ControlPanel onRunAnalysis={runAnalysis} />
         
         {/* Right Split Area */}
         <div className="flex-1 split-container">
