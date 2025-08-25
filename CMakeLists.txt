@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.20...3.27)
 
+# Set modern CMake policies to avoid warnings
+cmake_policy(SET CMP0135 NEW)  # Use DOWNLOAD_EXTRACT_TIMESTAMP for FetchContent
+
 # Project configuration
 project(nova_genesis_orbitalguard 
     VERSION 1.0.0
