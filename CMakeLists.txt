@@ -41,8 +41,7 @@ if(ENABLE_SGP4)
     FetchContent_Declare(
         sgp4_ext
         GIT_REPOSITORY https://github.com/magnific0/SGP4.git
-        # TODO: Pin to a specific commit for full reproducibility, e.g., GIT_TAG <commit-hash>
-        GIT_TAG master
+        GIT_TAG b70eb3591f2c1534efe8e59315990f844c06fadb
         CMAKE_ARGS
             -DSGP4_WITH_TESTS=OFF
     )
