@@ -1,10 +1,5 @@
 {
   "timestamp_minutes": 1440.000000,
   "conjunction_pairs": [
-    {
-      "sat1": { "name": "FENGYUN 1C DEB          ", "position_km": [-1797.998338, -544.958601, 6970.082962] },
-      "sat2": { "name": "FENGYUN 1C DEB          ", "position_km": [-1828.879001, -483.953639, 7012.129322] },
-      "distance_km": 80.269030
-    }
   ]
 }
