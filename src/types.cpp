@@ -1,4 +1,5 @@
 #include "types.h"
+#include "simplified_core.h"
 
 //will be used later to determine the risk factor
 string severity_to_string(int level) {
@@ -13,7 +14,7 @@ string severity_to_string(int level) {
             return "Medium risk";
             break;
         case 3:
-            return "High risk";
+            return "High risk"; 
             break;
         case 4:
             return "Collision imminent";
@@ -85,4 +86,45 @@ vector<TLE> parseTLEfile(const string &filename){
     file.close();
 
     return tles;
+}
+
+// JSON serialization functions (moved from main.cpp)
+void writeTracksJSON(const vector<Trajectory>& tracks, double startMs, double stopMs, double stepSeconds) {
+    ofstream jf("tests/coordinates.json");
+    jf << "{\n";
+    jf << "  \"timestamp_minutes\": " << fixed << setprecision(6) << (stopMs - startMs) / 60000.0 << ",\n";
+    jf << "  \"satellites\": [\n";
+    
+    for (size_t i = 0; i < tracks.size(); ++i) {
+        const auto& track = tracks[i];
+        if (!track.states.empty()) {
+            const auto& finalState = track.states.back();
+            jf << "    {\n";
+            jf << "      \"name\": \"" << track.id << "\",\n";
+            jf << fixed << setprecision(6);
+            jf << "      \"position_km\": [" << finalState.x << ", " << finalState.y << ", " << finalState.z << "],\n";
+            jf << "      \"velocity_km_s\": [" << finalState.vx << ", " << finalState.vy << ", " << finalState.vz << "]\n";
+            jf << "    }" << (i + 1 < tracks.size() ? ",\n" : "\n");
+        }
+    }
+    jf << "  ]\n";
+    jf << "}\n";
+}
+
+void writeEncountersJSON(const vector<Encounter>& encounters) {
+    ofstream jf("tests/conjunctions.json");
+    jf << "{\n";
+    jf << "  \"timestamp_minutes\": " << fixed << setprecision(6) << 1440.0 << ",\n";
+    jf << "  \"conjunction_pairs\": [\n";
+    
+    for (size_t k = 0; k < encounters.size(); ++k) {
+        const auto& enc = encounters[k];
+        jf << "    {\n";
+        jf << "      \"sat1\": { \"name\": \"" << enc.aId << "\", \"position_km\": [0, 0, 0] },\n";
+        jf << "      \"sat2\": { \"name\": \"" << enc.bId << "\", \"position_km\": [0, 0, 0] },\n";
+        jf << "      \"distance_km\": " << fixed << setprecision(6) << enc.miss_m / 1000.0 << "\n";
+        jf << "    }" << (k + 1 < encounters.size() ? ",\n" : "\n");
+    }
+    jf << "  ]\n";
+    jf << "}\n";
 }

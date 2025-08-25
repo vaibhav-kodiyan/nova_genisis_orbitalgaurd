@@ -10,27 +10,31 @@ struct State {
 };
 
 struct Trajectory {
-    std::string id;
+    string id;
     bool isDebris;
-    std::vector<State> states;
+    vector<State> states;
 };
 
 struct Encounter {
-    std::string aId;
-    std::string bId;
+    string aId;
+    string bId;
     double t;
     double miss_m;
     double rel_mps;
 };
 
 // Function declarations
-std::vector<Trajectory> propagate_coords_only(
-    const std::vector<std::string>& ids,
-    const std::vector<bool>& isDebrisFlags,
+vector<Trajectory> propagate_coords_only(
+    const vector<string>& ids,
+    const vector<bool>& isDebrisFlags,
     double startEpochMs,
     double stepSeconds,
     double durationHours);
 
-std::vector<Encounter> screen_by_threshold(
-    const std::vector<Trajectory>& tracks, 
+vector<Encounter> screen_by_threshold(
+    const vector<Trajectory>& tracks, 
     double threshold_m);
+
+// JSON serialization helpers
+void writeTracksJSON(const vector<Trajectory>& tracks, double startMs, double stopMs, double stepSeconds);
+void writeEncountersJSON(const vector<Encounter>& encounters);

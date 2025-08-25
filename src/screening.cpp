@@ -1,10 +1,11 @@
 #include "simplified_core.h"
+#include "types.h" // for severity_to_string
 
-std::vector<Encounter> screen_by_threshold(
-    const std::vector<Trajectory>& tracks, 
+vector<Encounter> screen_by_threshold(
+    const vector<Trajectory>& tracks, 
     double threshold_m) {
     
-    std::vector<Encounter> encounters;
+    vector<Encounter> encounters;
     
     if (tracks.size() < 2) {
         return encounters;
@@ -35,20 +36,28 @@ std::vector<Encounter> screen_by_threshold(
                 double dz = (state1.z - state2.z) * 1000.0;
                 double distance_m = sqrt(dx*dx + dy*dy + dz*dz);
                 
-                // Check threshold
+                // Check threshold (caller-provided threshold may already account for object radii)
                 if (distance_m <= threshold_m) {
-                    // Compute relative speed if velocities are available
-                    double dvx = (state1.vx - state2.vx) * 1000.0; // Convert km/s to m/s
-                    double dvy = (state1.vy - state2.vy) * 1000.0;
-                    double dvz = (state1.vz - state2.vz) * 1000.0;
-                    double rel_speed_mps = sqrt(dvx*dvx + dvy*dvy + dvz*dvz);
-                    
+                    // Severity bands relative to threshold
+                    // <= 1/3 threshold: High, <= 2/3: Medium, <= threshold: Low, else: None
+                    int level = NONE;
+                    if (distance_m <= (threshold_m / 3.0)) {
+                        level = HIGH;
+                    } else if (distance_m <= (2.0 * threshold_m / 3.0)) {
+                        level = MEDIUM;
+                    } else { // <= threshold_m
+                        level = LOW;
+                    }
+
+                    // Map to string (as requested). Not stored; kept simple.
+                    (void)severity_to_string(level);
+
                     Encounter encounter;
                     encounter.aId = track1.id;
                     encounter.bId = track2.id;
                     encounter.t = state1.t;
                     encounter.miss_m = distance_m;
-                    encounter.rel_mps = rel_speed_mps;
+                    encounter.rel_mps = 0.0; // keep simple: no velocity-based logic
                     
                     encounters.push_back(encounter);
                     

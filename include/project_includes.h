@@ -14,6 +14,11 @@ using namespace std;
 #include <fstream>
 #include <cctype>
 #include <iomanip>
+#include <new>
 
 // threshold distance in km for conjunction screening
 const double THRESHOLD_DISTANCE = 100.0;
+
+// basic time constants
+const double SECONDS_PER_DAY = 86400.0;
+const double MINUTES_PER_DAY = 1440.0;
