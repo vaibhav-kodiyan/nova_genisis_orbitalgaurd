@@ -67,7 +67,7 @@ export default function App() {
           <div className="split-pane split-pane-top">
             <ErrorBoundary>
               {hasData ? (
-                <Viewer3D />
+                <Viewer3D paused={isRunning} />
               ) : (
                 <div className="h-full flex items-center justify-center">
                   <div className="text-center text-slate-400">
