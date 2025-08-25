@@ -10,7 +10,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         build_type: [Debug, Release]
         compiler:
           - { name: gcc, cc: gcc, cxx: g++ }
@@ -34,6 +34,17 @@ jobs:
               name: msvc
               cc: cl
               cxx: cl
+          # macOS doesn't have MSVC or GCC by default
+          - os: macos-latest
+            compiler:
+              name: msvc
+              cc: cl
+              cxx: cl
+          - os: macos-latest
+            compiler:
+              name: gcc
+              cc: gcc
+              cxx: g++
 
     runs-on: ${{ matrix.os }}
     
@@ -65,6 +76,11 @@ jobs:
         sudo apt-get install -y clang-14
         echo "CC=clang-14" >> $GITHUB_ENV
         echo "CXX=clang++-14" >> $GITHUB_ENV
+
+    - name: Install dependencies (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install ninja
 
     - name: Install dependencies (Windows)
       if: matrix.os == 'windows-latest'
@@ -118,41 +134,82 @@ jobs:
     - name: Configure CMake (Windows MSVC)
       if: matrix.os == 'windows-latest'
       run: |
-        cmake -B build -S . -G "Visual Studio 16 2019" -A x64 -T v143
+        cmake -B build -S . -G "Visual Studio 17 2022" -A x64 -T v143 -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
-    - name: Build
+    - name: Configure CMake (macOS Clang)
+      if: matrix.os == 'macos-latest' && matrix.compiler.name == 'clang'
+      run: |
+        cmake --preset macos-clang-release
+
+    - name: Build (Linux/Windows)
+      if: matrix.os != 'macos-latest'
       run: |
         cmake --build build --config ${{ matrix.build_type }}
 
-    - name: Test
+    - name: Build (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        cmake --build --preset macos-clang-release
+
+    - name: Test (Linux/Windows)
+      if: matrix.os != 'macos-latest'
       run: |
         cd build
         ctest --build-config ${{ matrix.build_type }} --output-on-failure --verbose
 
-    - name: Run main executable test
+    - name: Test (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        cd build/macos-clang-release
+        ctest --build-config Release --output-on-failure --verbose
+
+    - name: Run main executable test (Linux)
+      if: matrix.os == 'ubuntu-latest'
       shell: bash
       run: |
-        if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          if [ -f "./build/${{ matrix.build_type }}/nova_genesis_orbitalguard_test.exe" ]; then
-            ./build/${{ matrix.build_type }}/nova_genesis_orbitalguard_test.exe
-          else
-            echo "Main test executable not found, skipping..."
-          fi
+        if [ -f "./build/nova_genesis_orbitalguard_test" ]; then
+          ./build/nova_genesis_orbitalguard_test
         else
-          if [ -f "./build/nova_genesis_orbitalguard_test" ]; then
-            ./build/nova_genesis_orbitalguard_test
-          else
-            echo "Main test executable not found, skipping..."
-          fi
+          echo "Main test executable not found, skipping..."
         fi
 
-    - name: List build artifacts (Debug)
-      if: failure()
+    - name: Run main executable test (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: pwsh
+      run: |
+        if (Test-Path "./build/${{ matrix.build_type }}/nova_genesis_orbitalguard_test.exe") {
+          ./build/${{ matrix.build_type }}/nova_genesis_orbitalguard_test.exe
+        } else {
+          Write-Host "Main test executable not found, skipping..."
+        }
+
+    - name: Run main executable test (macOS)
+      if: matrix.os == 'macos-latest'
+      shell: bash
+      run: |
+        if [ -f "./build/macos-clang-release/nova_genesis_orbitalguard_test" ]; then
+          ./build/macos-clang-release/nova_genesis_orbitalguard_test
+        else
+          echo "Main test executable not found, skipping..."
+        fi
+
+    - name: List build artifacts (Debug - Linux)
+      if: failure() && matrix.os == 'ubuntu-latest'
       shell: bash
       run: |
         echo "Build directory contents:"
-        if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          ls -la build/${{ matrix.build_type }}/
-        else
-          ls -la build/
-        fi
+        ls -la build/
+
+    - name: List build artifacts (Debug - Windows)
+      if: failure() && matrix.os == 'windows-latest'
+      shell: pwsh
+      run: |
+        Write-Host "Build directory contents:"
+        Get-ChildItem -Path "build/${{ matrix.build_type }}/" -Force
+
+    - name: List build artifacts (Debug - macOS)
+      if: failure() && matrix.os == 'macos-latest'
+      shell: bash
+      run: |
+        echo "Build directory contents:"
+        ls -la build/macos-clang-release/
