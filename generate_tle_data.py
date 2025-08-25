@@ -24,34 +24,34 @@ def generate_satellites(count=400):
     # Satellite constellation types with much more varied orbital characteristics
     constellations = [
         # Low Earth Orbit - Very Low (ISS-like)
-        {"name_prefix": "LEO-VLOW", "count": 100, "inc_range": (0.0, 28.5), "alt_range": (400, 450), "ecc_range": (0.0001, 0.0050)},
+        {"name_prefix": "LEO-VLOW", "count": 40, "inc_range": (0.0, 28.5), "alt_range": (400, 450), "ecc_range": (0.0001, 0.0050)},
         
         # Low Earth Orbit - Low inclination (Starlink-like)
-        {"name_prefix": "LEO-LOW", "count": 150, "inc_range": (28.5, 57.0), "alt_range": (500, 700), "ecc_range": (0.0001, 0.0100)},
+        {"name_prefix": "LEO-LOW", "count": 50, "inc_range": (28.5, 57.0), "alt_range": (500, 700), "ecc_range": (0.0001, 0.0100)},
         
-        # Low Earth Orbit - Medium inclination
-        {"name_prefix": "LEO-MED", "count": 150, "inc_range": (57.0, 85.5), "alt_range": (700, 1000), "ecc_range": (0.0050, 0.0200)},
+        # Low Earth Orbit - Medium inclination (OneWeb-like)
+        {"name_prefix": "LEO-MED", "count": 40, "inc_range": (57.0, 85.5), "alt_range": (700, 1000), "ecc_range": (0.0050, 0.0200)},
         
         # Low Earth Orbit - High inclination (Polar)
-        {"name_prefix": "LEO-HIGH", "count": 100, "inc_range": (85.5, 114.0), "alt_range": (800, 1200), "ecc_range": (0.0100, 0.0300)},
+        {"name_prefix": "LEO-HIGH", "count": 30, "inc_range": (85.5, 114.0), "alt_range": (800, 1200), "ecc_range": (0.0100, 0.0300)},
         
         # Low Earth Orbit - Retrograde
-        {"name_prefix": "LEO-RETRO", "count": 100, "inc_range": (114.0, 142.5), "alt_range": (600, 900), "ecc_range": (0.0050, 0.0250)},
+        {"name_prefix": "LEO-RETRO", "count": 20, "inc_range": (114.0, 142.5), "alt_range": (600, 900), "ecc_range": (0.0050, 0.0250)},
         
-        # Medium Earth Orbit - Navigation
-        {"name_prefix": "MEO-NAV", "count": 100, "inc_range": (50.0, 65.0), "alt_range": (19000, 24000), "ecc_range": (0.0001, 0.0100)},
+        # Medium Earth Orbit - Navigation (GPS-like)
+        {"name_prefix": "MEO-NAV", "count": 10, "inc_range": (50.0, 65.0), "alt_range": (19000, 24000), "ecc_range": (0.0001, 0.0200)},
         
         # Medium Earth Orbit - Communication
-        {"name_prefix": "MEO-COMM", "count": 80, "inc_range": (0.0, 30.0), "alt_range": (8000, 15000), "ecc_range": (0.0100, 0.0500)},
+        {"name_prefix": "MEO-COMM", "count": 5, "inc_range": (0.0, 30.0), "alt_range": (8000, 15000), "ecc_range": (0.0001, 0.0500)},
         
-        # Highly Elliptical Orbit (Molniya-like)
-        {"name_prefix": "HEO-MOL", "count": 60, "inc_range": (60.0, 70.0), "alt_range": (500, 40000), "ecc_range": (0.6000, 0.7500)},
+        # Highly Elliptical Orbit - Molniya-like
+        {"name_prefix": "HEO-MOL", "count": 3, "inc_range": (60.0, 70.0), "alt_range": (500, 40000), "ecc_range": (0.6000, 0.7500)},
         
         # Geostationary Transfer Orbit
-        {"name_prefix": "GTO", "count": 80, "inc_range": (0.0, 28.5), "alt_range": (200, 35786), "ecc_range": (0.7000, 0.7300)},
+        {"name_prefix": "GTO", "count": 1, "inc_range": (0.0, 28.5), "alt_range": (200, 35786), "ecc_range": (0.7000, 0.7300)},
         
         # Geostationary Orbit
-        {"name_prefix": "GEO", "count": 70, "inc_range": (0.0, 5.0), "alt_range": (35786, 35786), "ecc_range": (0.0001, 0.0050)},
+        {"name_prefix": "GEO", "count": 1, "inc_range": (0.0, 5.0), "alt_range": (35786, 35786), "ecc_range": (0.0001, 0.0100)},
     ]
     
     norad_id = 50001
@@ -80,35 +80,32 @@ def generate_satellites(count=400):
     
     return satellites
 
-def generate_debris(count=600):
+def generate_debris(count=400):
     """Generate varied space debris data with extreme orbital diversity"""
     debris = []
     
     # Debris types with much more varied characteristics across all orbital regimes
     debris_types = [
         # Very Low Earth Orbit debris (atmospheric drag region)
-        {"name_prefix": "VLEO DEB", "count": 100, "inc_range": (0.0, 180.0), "alt_range": (150, 400), "ecc_range": (0.0001, 0.0500)},
+        {"name_prefix": "VLEO DEB", "count": 80, "inc_range": (0.0, 180.0), "alt_range": (150, 400), "ecc_range": (0.0001, 0.0500)},
         
         # Low Earth Orbit debris - Equatorial
-        {"name_prefix": "LEO-EQ DEB", "count": 150, "inc_range": (0.0, 30.0), "alt_range": (400, 1200), "ecc_range": (0.0001, 0.1500)},
+        {"name_prefix": "LEO-EQ DEB", "count": 100, "inc_range": (0.0, 30.0), "alt_range": (400, 1200), "ecc_range": (0.0001, 0.1500)},
         
         # Low Earth Orbit debris - Mid-inclination
-        {"name_prefix": "LEO-MID DEB", "count": 150, "inc_range": (30.0, 60.0), "alt_range": (500, 1500), "ecc_range": (0.0050, 0.2000)},
+        {"name_prefix": "LEO-MID DEB", "count": 100, "inc_range": (30.0, 60.0), "alt_range": (500, 1500), "ecc_range": (0.0050, 0.2000)},
         
         # Low Earth Orbit debris - High inclination/Polar
-        {"name_prefix": "LEO-POL DEB", "count": 100, "inc_range": (60.0, 120.0), "alt_range": (600, 1800), "ecc_range": (0.0100, 0.3000)},
+        {"name_prefix": "LEO-POL DEB", "count": 80, "inc_range": (60.0, 120.0), "alt_range": (600, 1800), "ecc_range": (0.0100, 0.3000)},
         
         # Low Earth Orbit debris - Retrograde
-        {"name_prefix": "LEO-RET DEB", "count": 50, "inc_range": (120.0, 180.0), "alt_range": (400, 1000), "ecc_range": (0.0050, 0.2500)},
+        {"name_prefix": "LEO-RET DEB", "count": 30, "inc_range": (120.0, 180.0), "alt_range": (400, 1000), "ecc_range": (0.0050, 0.2500)},
         
         # Medium Earth Orbit debris
-        {"name_prefix": "MEO DEB", "count": 30, "inc_range": (0.0, 90.0), "alt_range": (2000, 20000), "ecc_range": (0.0100, 0.4000)},
+        {"name_prefix": "MEO DEB", "count": 8, "inc_range": (0.0, 90.0), "alt_range": (2000, 20000), "ecc_range": (0.0100, 0.4000)},
         
         # Highly Elliptical Orbit debris
-        {"name_prefix": "HEO DEB", "count": 15, "inc_range": (45.0, 75.0), "alt_range": (500, 50000), "ecc_range": (0.5000, 0.8000)},
-        
-        # Geostationary Transfer Orbit debris
-        {"name_prefix": "GTO DEB", "count": 5, "inc_range": (0.0, 45.0), "alt_range": (200, 35786), "ecc_range": (0.6500, 0.7500)},
+        {"name_prefix": "HEO DEB", "count": 2, "inc_range": (45.0, 75.0), "alt_range": (500, 50000), "ecc_range": (0.5000, 0.8000)},
     ]
     
     norad_id = 60001
@@ -138,11 +135,13 @@ def generate_debris(count=600):
     return debris
 
 def main():
-    print("Generating 1000 satellites with varied orbital parameters...")
-    satellites = generate_satellites(1000)
+    count = 200
+    debris_count = 400
+    print(f"Generating {count} satellites with varied orbital parameters...")
+    satellites = generate_satellites(count)
     
-    print("Generating 3000 debris objects with diverse orbits...")
-    debris = generate_debris(3000)
+    print(f"Generating {debris_count} debris objects with diverse orbits...")
+    debris = generate_debris(debris_count)
     
     # Write satellites to file
     with open('/home/vaibhav_kodiyan_/projects/hackathon/data/satellites_1000.tle', 'w') as f:
