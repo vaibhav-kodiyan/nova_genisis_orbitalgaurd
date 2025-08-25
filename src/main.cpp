@@ -93,13 +93,13 @@ int main(){
     // 3) Simulation parameters
     const double dt = 180.0; // 3 hours step (180 minutes)
     double currentTime = 0.0; // start from TLE epoch
+    const double maxMinutes = 24.0 * 60.0; // run up to 24 hours
     
-    cout << "Starting continuous simulation (3-hour steps)..." << endl;
-    cout << "Press Ctrl+C to stop the simulation." << endl;
-    cout << "JSON files will be updated continuously for 3D frontend." << endl;
+    cout << "Starting 24-hour simulation (3-hour steps)..." << endl;
+    cout << "JSON files will be updated for 3D frontend." << endl;
 
-    // 4) Continuous propagation loop - runs indefinitely until stopped
-    while(true){
+    // 4) Propagation loop - runs until 24 hours of simulated time
+    while(currentTime <= maxMinutes){
         vector<array<double,3>> currentR(tles.size());
         vector<array<double,3>> currentV(tles.size());
 
@@ -126,6 +126,7 @@ int main(){
         // or remove the delay entirely for maximum speed
         // usleep(100000); // 0.1 second delay - uncomment if needed
     }
-
+    
+    cout << "Simulation complete at t=" << fixed << setprecision(1) << maxMinutes << " min - 24 hours reached." << endl;
     return 0;
 }
