@@ -45,24 +45,79 @@ export class WasmBridge {
     tleEntries.forEach((tle, index) => {
       const states = [];
       
+      // Parse TLE orbital elements for realistic orbits
+      const line2 = tle.line2;
+      const inclinationDeg = parseFloat(line2.substring(8, 16));
+      const raanDeg = parseFloat(line2.substring(17, 25));
+      const eccentricity = parseFloat('0.' + line2.substring(26, 33));
+      const argPerigeeDeg = parseFloat(line2.substring(34, 42));
+      const meanAnomalyDeg = parseFloat(line2.substring(43, 51));
+      const meanMotion = parseFloat(line2.substring(52, 63)); // revs per day
+      
+      // Convert to radians
+      const inclination = inclinationDeg * Math.PI / 180;
+      const raan = raanDeg * Math.PI / 180;
+      const argPerigee = argPerigeeDeg * Math.PI / 180;
+      const meanAnomalyStart = meanAnomalyDeg * Math.PI / 180;
+      
+      // Calculate semi-major axis from mean motion
+      const n = meanMotion * 2 * Math.PI / 86400; // rad/s
+      const mu = 398600.4418; // km^3/s^2
+      const a = Math.pow(mu / (n * n), 1/3); // semi-major axis in km
+      
       for (let step = 0; step <= steps; step++) {
         const t = startMs + (step * stepS * 1000);
+        const timeFromStart = (step * stepS); // seconds from start
         
-        // Mock orbital propagation - generate realistic-looking orbits
-        const angle = (step * stepS) / 5400; // ~90 min orbit
-        const radius = 6371 + 400 + (Math.random() * 1000); // 400-1400 km altitude
-        const inclination = Math.random() * Math.PI;
+        // Simple Keplerian propagation
+        const meanAnomaly = meanAnomalyStart + n * timeFromStart;
         
+        // Solve Kepler's equation (simplified for small eccentricity)
+        let E = meanAnomaly;
+        for (let iter = 0; iter < 5; iter++) {
+          E = meanAnomaly + eccentricity * Math.sin(E);
+        }
+        
+        // True anomaly
+        const nu = 2 * Math.atan2(
+          Math.sqrt(1 + eccentricity) * Math.sin(E/2),
+          Math.sqrt(1 - eccentricity) * Math.cos(E/2)
+        );
+        
+        // Distance from Earth center
+        const r_mag = a * (1 - eccentricity * Math.cos(E));
+        
+        // Position in orbital plane
+        const x_orb = r_mag * Math.cos(nu);
+        const y_orb = r_mag * Math.sin(nu);
+        
+        // Rotation matrices to convert to ECI coordinates
+        const cosRaan = Math.cos(raan);
+        const sinRaan = Math.sin(raan);
+        const cosInc = Math.cos(inclination);
+        const sinInc = Math.sin(inclination);
+        const cosArgP = Math.cos(argPerigee);
+        const sinArgP = Math.sin(argPerigee);
+        
+        // Transform to ECI coordinates
         const r: [number, number, number] = [
-          radius * Math.cos(angle) * Math.cos(inclination),
-          radius * Math.sin(angle) * Math.cos(inclination),
-          radius * Math.sin(inclination)
+          (cosRaan * cosArgP - sinRaan * sinArgP * cosInc) * x_orb + 
+          (-cosRaan * sinArgP - sinRaan * cosArgP * cosInc) * y_orb,
+          
+          (sinRaan * cosArgP + cosRaan * sinArgP * cosInc) * x_orb + 
+          (-sinRaan * sinArgP + cosRaan * cosArgP * cosInc) * y_orb,
+          
+          (sinArgP * sinInc) * x_orb + (cosArgP * sinInc) * y_orb
         ];
         
+        // Simple velocity calculation (circular approximation)
+        const v_mag = Math.sqrt(mu / r_mag);
         const v: [number, number, number] = [
-          -7.5 * Math.sin(angle),
-          7.5 * Math.cos(angle),
-          0
+          -v_mag * Math.sin(nu + argPerigee) * Math.cos(inclination) * Math.cos(raan) - 
+           v_mag * Math.cos(nu + argPerigee) * Math.sin(raan),
+          -v_mag * Math.sin(nu + argPerigee) * Math.cos(inclination) * Math.sin(raan) + 
+           v_mag * Math.cos(nu + argPerigee) * Math.cos(raan),
+           v_mag * Math.sin(nu + argPerigee) * Math.sin(inclination)
         ];
         
         states.push({ t, r, v });
@@ -144,3 +199,4 @@ export class WasmBridge {
 }
 
 export const wasmBridge = new WasmBridge();
+export default wasmBridge;

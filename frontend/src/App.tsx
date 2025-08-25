@@ -12,7 +12,7 @@ import toast from 'react-hot-toast';
 import './split.css';
 
 export default function App() {
-  const { satelliteTles, debrisTles, tracks } = useAppStore();
+  const { satelliteTles, debrisTles } = useAppStore();
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<AnalysisResults | null>(null);
   const [errMsg, setErrMsg] = useState<string>('');
@@ -27,7 +27,7 @@ export default function App() {
     setErrMsg('');
     
     try {
-      const analysisResults = await analyzeScenarioFromStore(tracks);
+      const analysisResults = await analyzeScenarioFromStore();
       setResults(analysisResults);
       toast.success('Analysis complete. Results displayed below.');
     } catch (error) {

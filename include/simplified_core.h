@@ -25,8 +25,8 @@ struct Encounter {
 
 // Function declarations
 vector<Trajectory> propagate_coords_only(
-    const vector<string>& ids,
-    const vector<bool>& isDebrisFlags,
+    vector<string>& ids,
+    vector<bool>& isDebrisFlags,
     double startEpochMs,
     double stepSeconds,
     double durationHours);

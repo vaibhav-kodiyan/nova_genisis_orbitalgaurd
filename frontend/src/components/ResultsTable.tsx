@@ -5,6 +5,7 @@ export interface EncounterRow {
   tcaUtc: string;
   minDistKm: number;
   relSpeedKms: number;
+  riskLevel: 'low' | 'medium' | 'high';
 }
 
 export interface AnalysisResults {
@@ -17,6 +18,19 @@ export interface AnalysisResults {
 
 interface ResultsTableProps {
   results: AnalysisResults | null;
+}
+
+function getRiskLevelColor(riskLevel: 'low' | 'medium' | 'high'): string {
+  switch (riskLevel) {
+    case 'high':
+      return 'text-red-400 bg-red-500/20 border border-red-500/40';
+    case 'medium':
+      return 'text-yellow-400 bg-yellow-500/20 border border-yellow-500/40';
+    case 'low':
+      return 'text-green-400 bg-green-500/20 border border-green-500/40';
+    default:
+      return 'text-slate-400 bg-slate-500/20 border border-slate-500/40';
+  }
 }
 
 export function ResultsTable({ results }: ResultsTableProps) {
@@ -52,6 +66,7 @@ export function ResultsTable({ results }: ResultsTableProps) {
                 <th>TCA (UTC)</th>
                 <th>Min Dist (km)</th>
                 <th>Rel Speed (km/s)</th>
+                <th>Risk Level</th>
               </tr>
             </thead>
             <tbody>
@@ -62,6 +77,11 @@ export function ResultsTable({ results }: ResultsTableProps) {
                   <td className="font-mono">{encounter.tcaUtc.replace('T', ' ').substr(0, 19)}</td>
                   <td className="font-mono">{encounter.minDistKm.toFixed(3)}</td>
                   <td className="font-mono">{encounter.relSpeedKms.toFixed(2)}</td>
+                  <td>
+                    <span className={`px-2 py-1 rounded text-xs font-medium uppercase tracking-wide ${getRiskLevelColor(encounter.riskLevel)}`}>
+                      {encounter.riskLevel}
+                    </span>
+                  </td>
                 </tr>
               ))}
             </tbody>
