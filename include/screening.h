@@ -2,7 +2,6 @@
 #define SCREENING_H
 
 #include "types.h"
-#include "constants.h"
 
 // Error codes for screening functions
 #define SCREENING_SUCCESS 0

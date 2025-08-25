@@ -24,6 +24,13 @@ double fuel_consumption(double delta_v_km_s, double specific_impulse_s,
                        double dry_mass_kg, double propellant_mass_kg, double efficiency);
 
 /**
+ * Beginner-friendly fuel requirement using Tsiolkovsky rocket equation.
+ * Units: delta_v in m/s, Isp in s, initial_mass in kg.
+ * Returns required propellant mass in kg (ignores caps/efficiency).
+ */
+double fuel_required_simple(double delta_v_mps, double specific_impulse_s, double initial_mass_kg);
+
+/**
  * Plan an avoidance maneuver between two objects
  * 
  * @param primary Primary object orbital elements
