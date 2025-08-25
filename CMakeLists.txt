@@ -68,6 +68,12 @@ set(API_SOURCES
     src/api.cpp
 )
 
+# WASM API source files
+set(WASM_API_SOURCES
+    ${SOURCES}
+    src/wasm_api.cpp
+)
+
 # Create static library
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
 
@@ -126,17 +132,20 @@ endif()
 if(OG_BUILD_WASM AND EMSCRIPTEN)
     message(STATUS "Building WebAssembly module with Emscripten")
     
-    # Create WASM library with API
-    add_executable(oglib_wasm ${API_SOURCES})
+    # Create WASM library with new API
+    add_executable(oglib_wasm ${WASM_API_SOURCES})
     set_target_properties(oglib_wasm PROPERTIES
         SUFFIX ".js"
-        LINK_FLAGS "-s WASM=1 -s MODULARIZE=1 -s EXPORT_NAME='OrbitalGuard' -s EXPORTED_FUNCTIONS=_og_parse_tle,_og_free_elements,_og_propagate,_og_screen,_og_plan_maneuver,_og_fuel_consumption,_og_last_error -s EXPORTED_RUNTIME_METHODS=malloc,free"
+        LINK_FLAGS "-s WASM=1 -s MODULARIZE=1 -s EXPORT_ES6=1 -s ALLOW_MEMORY_GROWTH=1 -s EXPORTED_FUNCTIONS=_og_parse_tle,_og_compute_simulation,_og_run_analysis,_og_free_string -s EXPORTED_RUNTIME_METHODS=ccall,cwrap,malloc,free -s ENVIRONMENT=web"
     )
     
-    # Optional: Add environment and other flags
-    set_target_properties(oglib_wasm PROPERTIES
-        LINK_FLAGS "${CMAKE_TARGET_PROPERTY_LINK_FLAGS} -s ENVIRONMENT=web,node"
-    )
+    # Link SGP4 to WASM build when enabled
+    if(ENABLE_SGP4)
+        target_link_libraries(oglib_wasm PRIVATE SGP4)
+        if(DEFINED sgp4_ext_SOURCE_DIR)
+            target_include_directories(oglib_wasm PUBLIC ${sgp4_ext_SOURCE_DIR})
+        endif()
+    endif()
     
     message(STATUS "WASM build configured. Use 'make oglib_wasm' to build.")
 elseif(OG_BUILD_WASM AND NOT EMSCRIPTEN)
