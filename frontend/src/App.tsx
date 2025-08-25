@@ -43,11 +43,6 @@ export default function App() {
 
   return (
     <div className="h-screen bg-slate-900 text-slate-200 flex flex-col">
-      {/* UI PROOF BANNER */}
-      <div data-proof="banner" style={{padding:"6px 10px",fontSize:12,background:"#0b1220",color:"#9ae6b4",borderBottom:"1px solid #1f2937"}}>
-        UI PROOF — {new Date().toISOString()}
-      </div>
-
       {/* Header */}
       <header className="sticky top-0 bg-slate-900/95 backdrop-blur border-b border-slate-700 px-6 py-4 flex items-center justify-between z-10">
         <h1 className="text-xl font-semibold text-slate-200">
