@@ -49,7 +49,7 @@ vector<Encounter> screen_by_threshold(
                         level = LOW;
                     }
 
-                    // Map to string (as requested). Not stored; kept simple.
+                    // Mapping to string
                     (void)severity_to_string(level);
 
                     Encounter encounter;
@@ -58,6 +58,7 @@ vector<Encounter> screen_by_threshold(
                     encounter.t = state1.t;
                     encounter.miss_m = distance_m;
                     encounter.rel_mps = 0.0; // keep simple: no velocity-based logic
+                    encounter.severity = level;
                     
                     encounters.push_back(encounter);
                     
