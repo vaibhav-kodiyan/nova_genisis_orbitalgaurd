@@ -57,6 +57,7 @@ set(SOURCES
     src/propagation.cpp
     src/screening.cpp
     src/time_utils.cpp
+    src/maneuver.cpp
 )
 
 # API source files
@@ -169,9 +170,13 @@ target_link_libraries(test_screening ${PROJECT_NAME})
 add_executable(test_api tests/test_api.cpp)
 target_link_libraries(test_api oglib_static)
 
+add_executable(test_maneuver tests/test_maneuver.cpp)
+target_link_libraries(test_maneuver ${PROJECT_NAME})
+
 # Add tests to CTest
 add_test(NAME ConstantsTest COMMAND test_constants)
 add_test(NAME TypesTest COMMAND test_types)
 add_test(NAME PropagationTest COMMAND test_propagation)
 add_test(NAME ScreeningTest COMMAND test_screening)
 add_test(NAME APITest COMMAND test_api)
+add_test(NAME ManeuverTest COMMAND test_maneuver)
