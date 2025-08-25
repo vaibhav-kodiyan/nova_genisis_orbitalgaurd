@@ -24,6 +24,7 @@ void test_fuel_consumption() {
     double fuel1 = fuel_consumption(0.01, 300.0, 1000.0, 100.0, 1.0); // 10 m/s = 0.01 km/s
     double expected1 = 1100.0 * (10.0 / (300.0 * 9.80665)); // Linear approximation
     assert(is_close(fuel1, expected1, FUEL_TOLERANCE));
+    (void)expected1; // Suppress unused variable warning
     printf("  ✓ Small delta-v (10 m/s): %.6f kg\n", fuel1);
     
     // Test case 2: Medium delta-v (100 m/s) - should use exponential
@@ -32,6 +33,7 @@ void test_fuel_consumption() {
     double mass_ratio = exp(-100.0 / (300.0 * 9.80665));
     double expected2 = m0 * (1.0 - mass_ratio);
     assert(is_close(fuel2, expected2, FUEL_TOLERANCE));
+    (void)expected2; // Suppress unused variable warning
     printf("  ✓ Medium delta-v (100 m/s): %.6f kg\n", fuel2);
     
     // Test case 3: Large delta-v (1000 m/s) - exponential regime
@@ -39,6 +41,7 @@ void test_fuel_consumption() {
     double mass_ratio3 = exp(-1000.0 / (300.0 * 9.80665));
     double expected3 = m0 * (1.0 - mass_ratio3);
     assert(is_close(fuel3, expected3, FUEL_TOLERANCE));
+    (void)expected3; // Suppress unused variable warning
     printf("  ✓ Large delta-v (1000 m/s): %.6f kg\n", fuel3);
     
     // Test case 4: Efficiency handling (50% efficiency)
@@ -47,6 +50,7 @@ void test_fuel_consumption() {
     double mass_ratio4 = exp(-eff_dv / (300.0 * 9.80665));
     double expected4 = m0 * (1.0 - mass_ratio4);
     assert(is_close(fuel4, expected4, FUEL_TOLERANCE));
+    (void)expected4; // Suppress unused variable warning
     printf("  ✓ Efficiency test (50%%): %.6f kg\n", fuel4);
     
     // Test case 5: Zero/negative efficiency handling
@@ -60,7 +64,24 @@ void test_plan_avoidance() {
     printf("Testing plan_avoidance()...\n");
     
     // Create test orbital elements (typical LEO satellite)
-    OrbitalElements primary = {0};
+    OrbitalElements primary = {
+        .semi_major_axis = 0.0,
+        .eccentricity = 0.0,
+        .tilt = 0.0,
+        .inclination = 0.0,
+        .node = 0.0,
+        .raan = 0.0,
+        .perigee_angle = 0.0,
+        .arg_perigee = 0.0,
+        .position = 0.0,
+        .time = 0.0,
+        .epoch = 0.0,
+        .mean_motion = 0.0,
+        .mean_anomaly = 0.0,
+        .bstar = 0.0,
+        .ndot = 0.0,
+        .nddot = 0.0
+    };
     primary.semi_major_axis = 6800.0; // km
     primary.eccentricity = 0.001;
     primary.inclination = 0.785; // ~45 degrees
@@ -119,7 +140,24 @@ void test_apply_maneuver() {
     printf("Testing apply_maneuver()...\n");
     
     // Create test orbital elements
-    OrbitalElements elements = {0};
+    OrbitalElements elements = {
+        .semi_major_axis = 0.0,
+        .eccentricity = 0.0,
+        .tilt = 0.0,
+        .inclination = 0.0,
+        .node = 0.0,
+        .raan = 0.0,
+        .perigee_angle = 0.0,
+        .arg_perigee = 0.0,
+        .position = 0.0,
+        .time = 0.0,
+        .epoch = 0.0,
+        .mean_motion = 0.0,
+        .mean_anomaly = 0.0,
+        .bstar = 0.0,
+        .ndot = 0.0,
+        .nddot = 0.0
+    };
     elements.semi_major_axis = 6800.0;
     elements.eccentricity = 0.001;
     elements.inclination = 0.785;
@@ -130,7 +168,12 @@ void test_apply_maneuver() {
     elements.mean_motion = 15.5;
     
     // Create test maneuver
-    Maneuver maneuver = {0};
+    Maneuver maneuver = {
+        .id = {0},
+        .epoch = 0.0,
+        .delta_v = {0.0, 0.0, 0.0},
+        .fuel_cost = 0.0
+    };
     strcpy(maneuver.id, "TEST_001");
     maneuver.epoch = elements.epoch + 0.1; // 0.1 days later
     maneuver.delta_v[0] = 10.0; // m/s in X direction

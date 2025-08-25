@@ -181,6 +181,10 @@ void test_sorting_and_filtering() {
     double risk1 = encounters[1].collision_probability * (encounters[1].severity + 1);
     assert(risk0 >= risk1);
     
+    // Use variables to avoid unused variable warnings
+    (void)risk0;
+    (void)risk1;
+    
     // Test filtering by probability
     size_t filtered_count = filter_by_probability(encounters, 3, 0.2);
     assert(filtered_count <= 3);
