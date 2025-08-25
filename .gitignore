@@ -42,6 +42,9 @@ Thumbs.db
 *.wasm
 *.js.map
 
+# Allow example files
+!examples/**/*.js
+
 # Debug files
 *.pdb
 *.dSYM/

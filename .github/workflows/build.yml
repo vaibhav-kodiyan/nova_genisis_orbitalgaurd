@@ -2,7 +2,7 @@ name: Build and Test
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, c_abi_and_webassembly_interop ]
   pull_request:
     branches: [ main ]
 
@@ -128,6 +128,16 @@ jobs:
       run: |
         cd build
         ctest --build-config ${{ matrix.build_type }} --output-on-failure --verbose
+    
+    - name: Test shared library build
+      shell: bash
+      run: |
+        echo "Testing shared library artifacts..."
+        if [ "${{ matrix.os }}" = "windows-latest" ]; then
+          ls -la build/${{ matrix.build_type }}/ | grep -E "(oglib|\.dll)" || echo "No shared library found"
+        else
+          ls -la build/ | grep -E "(oglib|\.so)" || echo "No shared library found"
+        fi
 
     - name: Run main executable test
       shell: bash
@@ -156,3 +166,43 @@ jobs:
         else
           ls -la build/
         fi
+
+  wasm:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/c_abi_and_webassembly_interop' || contains(github.event.head_commit.message, '[wasm]')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Emscripten
+      uses: mymindstorm/setup-emsdk@v13
+      with:
+        version: 3.1.45
+        actions-cache-folder: 'emsdk-cache'
+
+    - name: Verify Emscripten
+      run: |
+        emcc --version
+        em++ --version
+
+    - name: Configure WASM build
+      run: |
+        emcmake cmake -B build-wasm -S . -DOG_BUILD_WASM=ON -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build WASM module
+      run: |
+        cmake --build build-wasm --target oglib_wasm
+
+    - name: Verify WASM artifacts
+      run: |
+        ls -la build-wasm/
+        file build-wasm/oglib_wasm.js build-wasm/oglib_wasm.wasm || echo "WASM files not found"
+
+    - name: Upload WASM artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: wasm-build
+        path: |
+          build-wasm/oglib_wasm.js
+          build-wasm/oglib_wasm.wasm
