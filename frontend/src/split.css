@@ -1,0 +1,44 @@
+/* Split layout styles for permanent two-row grid */
+.split-container {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  height: 100vh;
+  gap: 12px;
+  padding: 12px;
+  background: #0f172a;
+}
+
+.split-pane {
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+}
+
+.split-pane-top {
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(71, 85, 105, 0.6);
+}
+
+.split-pane-bottom {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(71, 85, 105, 0.6);
+  display: flex;
+  flex-direction: column;
+}
+
+.split-toolbar {
+  padding: 12px;
+  border-bottom: 1px solid rgba(71, 85, 105, 0.6);
+  background: rgba(30, 41, 59, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.split-results {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
