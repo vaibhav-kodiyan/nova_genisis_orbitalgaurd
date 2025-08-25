@@ -10,10 +10,13 @@ project(nova_genesis_orbitalguard
     LANGUAGES CXX
 )
 
-# Set C++20 standard
-set(CMAKE_CXX_STANDARD 20)
+# Set C++17 standard for simplified core
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Add simplified core compilation flag
+add_compile_definitions(SIMPLIFIED_CORE=1)
 
 # Compiler-specific flags
 if(MSVC)
