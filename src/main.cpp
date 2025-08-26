@@ -2,6 +2,9 @@
 #include "types.h"
 
 int main(int argc, char* argv[]) {
+    (void)argc; // Suppress unused parameter warning
+    (void)argv; // Suppress unused parameter warning
+    
     // Default parameters
     double threshold_meters = 5000.0;
     double step_seconds = 60.0;

@@ -21,6 +21,7 @@ struct Encounter {
     double t;
     double miss_m;
     double rel_mps;
+    int severity;
 };
 
 // Function declarations
@@ -38,3 +39,4 @@ vector<Encounter> screen_by_threshold(
 // JSON serialization helpers
 void writeTracksJSON(const vector<Trajectory>& tracks, double startMs, double stopMs, double stepSeconds);
 void writeEncountersJSON(const vector<Encounter>& encounters);
+void streamConjunctionsJSON(const vector<Trajectory>& tracks, double threshold_meters);

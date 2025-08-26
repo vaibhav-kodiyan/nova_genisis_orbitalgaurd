@@ -90,6 +90,7 @@ vector<TLE> parseTLEfile(const string &filename){
 
 // JSON serialization functions (moved from main.cpp)
 void writeTracksJSON(const vector<Trajectory>& tracks, double startMs, double stopMs, double stepSeconds) {
+    (void)stepSeconds; // Suppress unused parameter warning
     ofstream jf("tests/coordinates.json");
     jf << "{\n";
     jf << "  \"timestamp_minutes\": " << fixed << setprecision(6) << (stopMs - startMs) / 60000.0 << ",\n";
@@ -127,4 +128,12 @@ void writeEncountersJSON(const vector<Encounter>& encounters) {
     }
     jf << "  ]\n";
     jf << "}\n";
+}
+
+void streamConjunctionsJSON(const vector<Trajectory>& tracks, double threshold_meters) {
+    // Screen for conjunctions using the threshold
+    vector<Encounter> encounters = screen_by_threshold(tracks, threshold_meters);
+    
+    // Write the encounters to JSON
+    writeEncountersJSON(encounters);
 }
