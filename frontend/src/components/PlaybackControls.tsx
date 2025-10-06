@@ -7,12 +7,12 @@ export function PlaybackControls() {
   const {
     state,
     tracks,
-    playbackTime,
+    t,
     isPlaying,
-    playbackSpeed,
-    setPlaybackTime,
-    setIsPlaying,
-    setPlaybackSpeed
+    speed,
+    setT,
+    setPlaying,
+    setSpeed
   } = useAppStore();
 
   const isVisible = state === 'Analysed';
@@ -37,16 +37,15 @@ export function PlaybackControls() {
   // Playback animation
   useEffect(() => {
     if (!isPlaying || !isVisible) return;
-    
+
     const interval = setInterval(() => {
-      setPlaybackTime((prev: number) => {
-        const next = prev + (1000 * playbackSpeed); // 1 second * speed
-        return next > maxTime ? minTime : next; // Loop back to start
-      });
+      const { t: currentT } = useAppStore.getState();
+      const next = currentT + (1000 * speed); // 1 second * speed
+      setT(next > maxTime ? minTime : next); // Loop back to start
     }, 100); // Update every 100ms for smooth animation
-    
+
     return () => clearInterval(interval);
-  }, [isPlaying, playbackSpeed, maxTime, minTime, setPlaybackTime, isVisible]);
+  }, [isPlaying, isVisible, maxTime, minTime, setT, speed]);
 
   // Keyboard shortcuts
   const handleKeyPress = useCallback((e: KeyboardEvent) => {
@@ -55,32 +54,34 @@ export function PlaybackControls() {
     switch (e.code) {
       case 'Space':
         e.preventDefault();
-        setIsPlaying(!isPlaying);
+        setPlaying(!isPlaying);
         break;
       case 'ArrowLeft':
         e.preventDefault();
-        setPlaybackTime(Math.max(minTime, playbackTime - 10000)); // -10 seconds
+        setT(Math.max(minTime, t - 10000)); // -10 seconds
         break;
       case 'ArrowRight':
         e.preventDefault();
-        setPlaybackTime(Math.min(maxTime, playbackTime + 10000)); // +10 seconds
+        setT(Math.min(maxTime, t + 10000)); // +10 seconds
         break;
-      case 'BracketLeft':
+      case 'BracketLeft': {
         e.preventDefault();
-        const currentIndex = PLAYBACK_SPEEDS.indexOf(playbackSpeed);
+        const currentIndex = PLAYBACK_SPEEDS.indexOf(speed);
         if (currentIndex > 0) {
-          setPlaybackSpeed(PLAYBACK_SPEEDS[currentIndex - 1]);
+          setSpeed(PLAYBACK_SPEEDS[currentIndex - 1]);
         }
         break;
-      case 'BracketRight':
+      }
+      case 'BracketRight': {
         e.preventDefault();
-        const currentIdx = PLAYBACK_SPEEDS.indexOf(playbackSpeed);
+        const currentIdx = PLAYBACK_SPEEDS.indexOf(speed);
         if (currentIdx < PLAYBACK_SPEEDS.length - 1) {
-          setPlaybackSpeed(PLAYBACK_SPEEDS[currentIdx + 1]);
+          setSpeed(PLAYBACK_SPEEDS[currentIdx + 1]);
         }
         break;
+      }
     }
-  }, [isVisible, isPlaying, playbackTime, playbackSpeed, minTime, maxTime, setIsPlaying, setPlaybackTime, setPlaybackSpeed]);
+  }, [isVisible, isPlaying, maxTime, minTime, setPlaying, setSpeed, setT, speed, t]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyPress);
@@ -97,13 +98,13 @@ export function PlaybackControls() {
     );
   }
 
-  const progressPercent = duration > 0 ? ((playbackTime - minTime) / duration) * 100 : 0;
+  const progressPercent = duration > 0 ? ((t - minTime) / duration) * 100 : 0;
 
   return (
     <div className="h-16 bg-white border-t border-gray-200 px-6 flex items-center space-x-4">
       {/* Play/Pause */}
       <button
-        onClick={() => setIsPlaying(!isPlaying)}
+        onClick={() => setPlaying(!isPlaying)}
         className="p-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         {isPlaying ? (
@@ -123,8 +124,8 @@ export function PlaybackControls() {
           type="range"
           min={minTime}
           max={maxTime}
-          value={playbackTime}
-          onChange={(e) => setPlaybackTime(Number(e.target.value))}
+          value={t}
+          onChange={(e) => setT(Number(e.target.value))}
           className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
           style={{
             background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${progressPercent}%, #e5e7eb ${progressPercent}%, #e5e7eb 100%)`
@@ -136,8 +137,8 @@ export function PlaybackControls() {
       <div className="flex items-center space-x-2">
         <span className="text-sm text-gray-600">Speed:</span>
         <select
-          value={playbackSpeed}
-          onChange={(e) => setPlaybackSpeed(Number(e.target.value))}
+          value={speed}
+          onChange={(e) => setSpeed(Number(e.target.value))}
           className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           {PLAYBACK_SPEEDS.map(speed => (
@@ -150,7 +151,7 @@ export function PlaybackControls() {
 
       {/* Time display */}
       <div className="text-sm text-gray-600 min-w-max">
-        {new Date(playbackTime).toISOString().substr(11, 8)}
+        {new Date(t).toISOString().substr(11, 8)}
       </div>
 
       {/* Keyboard shortcuts hint */}

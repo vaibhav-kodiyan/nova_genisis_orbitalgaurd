@@ -17,25 +17,25 @@ export function Playback() {
 
   const isVisible = state === 'Analysed';
 
-  if (!isVisible) return null;
-
   // Calculate tMax from tracks if not set
   React.useEffect(() => {
-    if (tracks.length === 0) return;
-    
+    if (!isVisible || tracks.length === 0) return;
+
     let max = -Infinity;
     tracks.forEach(track => {
       track.states.forEach(state => {
         max = Math.max(max, state.t);
       });
     });
-    
+
     // Update tMax in store if different
     if (tMax !== max) {
       setTMax(max);
       setT(Math.min(t, max));
     }
-  }, [tracks, t]);
+  }, [isVisible, tracks, t, tMax, setTMax, setT]);
+
+  if (!isVisible) return null;
 
   const speedOptions = [0.25, 0.5, 1, 2, 4, 8, 16, 32];
   const speedIndex = speedOptions.indexOf(speed);

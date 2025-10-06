@@ -5,8 +5,8 @@ export function SimControls() {
     state,
     satelliteTles,
     debrisTles,
-    playbackSpeed,
-    setPlaybackSpeed,
+    speed,
+    setSpeed,
     reset
   } = useAppStore();
 
@@ -70,15 +70,15 @@ export function SimControls() {
         {showSpeedSlider && (
           <div className="pt-2">
             <label className="text-slate-300 text-sm mb-1 block">
-              Playback Speed: {playbackSpeed}×
+              Playback Speed: {speed}×
             </label>
             <input
               type="range"
               min="0.25"
               max="4"
               step="0.25"
-              value={playbackSpeed}
-              onChange={(e) => setPlaybackSpeed(Number(e.target.value))}
+              value={speed}
+              onChange={(e) => setSpeed(Number(e.target.value))}
               className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer slider"
             />
           </div>

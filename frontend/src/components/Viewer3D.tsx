@@ -1,4 +1,4 @@
-import { useMemo, useRef, useEffect } from 'react';
+import { useMemo, useRef, useEffect, useCallback } from 'react';
 import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber';
 import { OrbitControls, Stars } from '@react-three/drei';
 import { TextureLoader, Raycaster } from 'three';
@@ -200,9 +200,9 @@ function SpaceObjects() {
   const satMaterial = useMemo(() => new THREE.MeshBasicMaterial({ color: 0x22c55e, vertexColors: false }), []);
   const debMaterial = useMemo(() => new THREE.MeshBasicMaterial({ color: 0xef4444, vertexColors: false }), []);
   const orbitMat = useMemo(() => new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8, depthWrite: false }), []);
-  
+
   // Helper function for orbit lines with proper scaling
-  const makeCircularOrbitLine = (r0_km: THREE.Vector3, v0_km?: THREE.Vector3, segments = 192) => {
+  const makeCircularOrbitLine = useCallback((r0_km: THREE.Vector3, v0_km?: THREE.Vector3, segments = 192) => {
     const R = r0_km.length() * KM_TO_UNITS;
     if (!(R > 0)) return null;
     const n = v0_km && v0_km.length() > 0 ? r0_km.clone().cross(v0_km).normalize() : new THREE.Vector3(0, 1, 0);
@@ -213,7 +213,7 @@ function SpaceObjects() {
       return new THREE.Vector3().addScaledVector(u, Math.cos(a) * R).addScaledVector(w, Math.sin(a) * R);
     });
     return new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), orbitMat);
-  };
+  }, [KM_TO_UNITS, orbitMat]);
   
   // Generate orbit lines when data loads
   useEffect(() => {
@@ -246,15 +246,15 @@ function SpaceObjects() {
     }
     
     console.log("[VIS] orbits", { sat: satOrbitsRef.current.children.length, deb: debOrbitsRef.current.children.length });
-  }, [satellites, debris, KM_TO_UNITS, orbitMat]);
-  
+  }, [satellites, debris, makeCircularOrbitLine]);
+
   // Phase C - RAF uses fresh store each frame; updates instances with positionAt
-  const updateInstances = (t: number) => {
+  const updateInstances = useCallback((t: number) => {
     if (!satDotsRef.current || !debDotsRef.current) return;
-    
+
     // Make sure you don't capture stale state. Use the store getter:
     const dummy = new THREE.Object3D();
-    
+
     // Use existing tracks from store - fallback to current arrays
     const currentSatellites = satellites;
     const currentDebris = debris;
@@ -292,16 +292,16 @@ function SpaceObjects() {
     }
     debDotsRef.current.count = i;
     debDotsRef.current.instanceMatrix.needsUpdate = true;
-  };
-  
+  }, [satellites, debris, KM_TO_UNITS]);
+
   // Start RAF loop when component mounts
   useEffect(() => {
     startRAFLoop(updateInstances);
     return () => stopRAFLoop();
-  }, [satellites, debris]);
-  
+  }, [updateInstances]);
+
   // Handle selection
-  const handleClick = (event: any) => {
+  const handleClick = useCallback((event: any) => {
     event.stopPropagation();
     const raycaster = new Raycaster();
     const mouse = new THREE.Vector2(
@@ -319,12 +319,12 @@ function SpaceObjects() {
     } else {
       setSelectedId(null);
     }
-  };
-  
+  }, [camera, gl, selectedId, setSelectedId, tracks]);
+
   useEffect(() => {
     gl.domElement.addEventListener('click', handleClick);
     return () => gl.domElement.removeEventListener('click', handleClick);
-  }, [gl, camera, selectedId, setSelectedId, tracks]);
+  }, [gl, handleClick]);
   
   // Setup instanced meshes with proper configuration
   useEffect(() => {
